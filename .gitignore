@@ -1,5 +1,20 @@
+# Build results
 bin/
 obj/
-/packages/
+
+# JetBrains Rider and Visual Studio
+.idea/
+.vs/
+_ReSharper.Caches/
+*.user
+*.suo
 riderModule.iml
-/_ReSharper.Caches/
+
+# NuGet packages
+packages/
+
+# Test results
+TestResults/
+
+# macOS
+.DS_Store
