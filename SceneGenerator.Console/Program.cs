@@ -121,5 +121,38 @@ class Program
         System.Console.WriteLine(
             $"Угол основания КИИ: X={kiiOrigin.X}, " +
             $"Y={kiiOrigin.Y}, Z={kiiOrigin.Z}");
+        Random random = settings.Seed.HasValue
+            ? new Random(settings.Seed.Value)
+            : new Random();
+
+        ObstacleSizeGenerator sizeGenerator = new(random);
+
+        for (int i = 0; i < 5; i++)
+        {
+            Size3D obstacleSize = sizeGenerator.Generate(
+                settings.ObstacleSizes);
+
+            System.Console.WriteLine(
+                $"Помеха {i + 1}: " +
+                $"{obstacleSize.Length:F2} × " +
+                $"{obstacleSize.Width:F2} × " +
+                $"{obstacleSize.Height:F2} м");BoxPlacementGenerator placementGenerator = new(random);
+
+            Size3D candidateSize = sizeGenerator.Generate(
+                settings.ObstacleSizes);
+
+            Box3D candidate = placementGenerator.Generate(
+                generatedScene.Bounds,
+                candidateSize);
+
+            System.Console.WriteLine(
+                $"Положение помехи: " +
+                $"X={candidate.Origin.X:F2}, " +
+                $"Y={candidate.Origin.Y:F2}, " +
+                $"Z={candidate.Origin.Z:F2}");
+
+            System.Console.WriteLine(
+                $"Внутри сцены: {generatedScene.Bounds.Contains(candidate)}");
+        }
     }
 }
