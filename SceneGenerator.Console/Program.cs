@@ -153,6 +153,32 @@ class Program
 
             System.Console.WriteLine(
                 $"Внутри сцены: {generatedScene.Bounds.Contains(candidate)}");
+            ObstaclePlacementValidator placementValidator = new();
+
+            Box3D kiiBox = generatedScene.Objects[0].Geometry;
+
+            bool overlappingAllowed = placementValidator.IsValid(
+                generatedScene,
+                kiiBox,
+                settings);
+
+            System.Console.WriteLine(
+                $"Размещение поверх КИИ разрешено: {overlappingAllowed}");
+
+            Box3D nearbyCandidate = new Box3D(
+                new Point3D(
+                    kiiBox.Origin.X + kiiBox.Size.Length + 50,
+                    kiiBox.Origin.Y,
+                    0),
+                new Size3D(20, 20, settings.ObstacleSizes.Height.Min));
+
+            bool nearbyAllowed = placementValidator.IsValid(
+                generatedScene,
+                nearbyCandidate,
+                settings);
+
+            System.Console.WriteLine(
+                $"Размещение в 50 м от КИИ разрешено: {nearbyAllowed}");
         }
     }
 }
