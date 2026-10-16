@@ -34,7 +34,9 @@ public class ObstaclePlacementValidator
                 ? settings.DistanceToNearestObstacle
                 : settings.MinDistanceBetweenObstacles;
 
-            if (distance < requiredDistance)
+            const double distanceTolerance = 0.000001;
+
+            if (distance < requiredDistance - distanceTolerance)
             {
                 return false;
             }

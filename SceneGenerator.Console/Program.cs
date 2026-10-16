@@ -179,6 +179,8 @@ class Program
 
             System.Console.WriteLine(
                 $"Размещение в 50 м от КИИ разрешено: {nearbyAllowed}");
+            
+            
         }
     }
 }
