@@ -6,12 +6,12 @@ public class SceneObject
 {
     public string Id { get; }
     public SceneObjectType Type { get; }
-    public Box3D Geometry { get; }
+    public PolygonPrism3D Geometry { get; }
 
     public SceneObject(
         string id,
         SceneObjectType type,
-        Box3D geometry)
+        PolygonPrism3D geometry)
     {
         if (string.IsNullOrWhiteSpace(id))
         {

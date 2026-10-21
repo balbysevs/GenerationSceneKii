@@ -8,6 +8,9 @@ public class Point3D
     
     public Point3D(double x, double y, double z)
         {
+        if (!double.IsFinite(x)) throw new ArgumentOutOfRangeException(nameof(x));
+        if (!double.IsFinite(y)) throw new ArgumentOutOfRangeException(nameof(y));
+        if (!double.IsFinite(z)) throw new ArgumentOutOfRangeException(nameof(z));
         X = x;
         Y = y;
         Z = z;

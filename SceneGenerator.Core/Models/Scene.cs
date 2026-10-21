@@ -19,7 +19,7 @@ public class Scene
     {
         if (string.IsNullOrWhiteSpace(id))
         {
-            throw new ArgumentException("Идентификатор сцен не должен быть пустым", nameof(id));
+            throw new ArgumentException("Идентификатор сцены не должен быть пустым", nameof(id));
         }
 
         if (!Enum.IsDefined(mode))
@@ -33,8 +33,13 @@ public class Scene
 
         if (!bounds.Contains(Kii.Geometry))
         {
-            throw new ArgumentException("Объект КИИ должен полность находиться в границах сцены.", nameof(Kii));
+            throw new ArgumentException("Объект КИИ должен полностью находиться в границах сцены.", nameof(Kii));
         }
+        if (mode == SceneMode.TwoD &&
+            (bounds.BaseElevation != 0 || bounds.Height != 0 || Kii.Geometry.BaseElevation != 0 || Kii.Geometry.Height != 0))
+            throw new ArgumentException("В режиме 2D отметки и высоты должны быть равны нулю.");
+        if (mode == SceneMode.ThreeD && (bounds.Height <= 0 || Kii.Geometry.Height <= 0))
+            throw new ArgumentException("В режиме 3D высоты сцены и КИИ должны быть положительными.");
         Id = id;
         Mode = mode;
         Bounds = bounds;
@@ -53,6 +58,11 @@ public class Scene
                 nameof(obstacle));
         }
 
+        if (Mode == SceneMode.TwoD && (obstacle.Geometry.BaseElevation != 0 || obstacle.Geometry.Height != 0))
+            throw new ArgumentException("В режиме 2D отметки и высоты должны быть равны нулю.", nameof(obstacle));
+        if (Mode == SceneMode.ThreeD && obstacle.Geometry.Height <= 0)
+            throw new ArgumentException("В режиме 3D высота помехи должна быть положительной.", nameof(obstacle));
+
         if (_objects.Any(item => item.Id == obstacle.Id))
         {
             throw new ArgumentException(
@@ -63,7 +73,7 @@ public class Scene
         if (!Bounds.Contains(obstacle.Geometry))
         {
             throw new ArgumentException(
-                "Помеха должна полностью находиться в границах сцены.",
+                "Помеха должна полностьюю находиться в границах сцены.",
                 nameof(obstacle));
         }
         if (_objects.Any(item =>

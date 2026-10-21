@@ -9,6 +9,11 @@
 
     <ItemGroup>
       <ProjectReference Include="..\SceneGenerator.Core\SceneGenerator.Core.csproj" />
+      <ProjectReference Include="../SceneGenerator.Serialization/SceneGenerator.Serialization.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Update="settings.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
     </ItemGroup>
 
 </Project>

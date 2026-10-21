@@ -10,7 +10,7 @@ public class Size3D
     {
         if (!double.IsFinite(length) || length <= 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(length), "Длинна должна быть положительным конечным числом.");
+            throw new ArgumentOutOfRangeException(nameof(length), "Длина должна быть положительным конечным числом.");
         }
 
         if (!double.IsFinite(width) || width <= 0)

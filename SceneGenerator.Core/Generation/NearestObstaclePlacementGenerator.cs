@@ -1,11 +1,10 @@
-using SceneGenerator.Core.Configuration;
 using SceneGenerator.Core.Geometry;
 
 namespace SceneGenerator.Core.Generation;
 
 public class NearestObstaclePlacementGenerator
 {
-    public Box3D Generate(Box3D Kii, Size3D obstacleSize, double distance)
+    public Box3D Generate(PolygonPrism3D Kii, Size3D obstacleSize, double distance)
     {
         ArgumentNullException.ThrowIfNull(Kii);
         ArgumentNullException.ThrowIfNull(obstacleSize);

@@ -35,7 +35,7 @@ public class RandomSceneGenerator
 
         Scene scene = _sceneFactory.CreateWithKii(sceneId, settings);
 
-        Box3D kiiGeometry = scene.Objects[0].Geometry;
+        PolygonPrism3D kiiGeometry = scene.Objects[0].Geometry;
 
         for (int index = 0; index < settings.ObstacleCount; index++)
         {

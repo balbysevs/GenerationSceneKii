@@ -1,4 +1,3 @@
-using System.Dynamic;
 using SceneGenerator.Core.Configuration;
 using SceneGenerator.Core.Geometry;
 using SceneGenerator.Core.Models;
@@ -9,7 +8,7 @@ public class ObstaclePlacementValidator
 {
     public bool IsValid(
         Scene scene,
-        Box3D candidate,
+        PolygonPrism3D candidate,
         GenerationSettings settings)
     {
         ArgumentNullException.ThrowIfNull(scene);

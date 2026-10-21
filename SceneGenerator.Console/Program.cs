@@ -1,186 +1,81 @@
-﻿using SceneGenerator.Core.Geometry;
-using SceneGenerator.Core.Models;
+﻿using SceneGenerator.Core.Models;
 using SceneGenerator.Core.Configuration;
 using SceneGenerator.Core.Generation;
+using SceneGenerator.Core.Contracts;
+using SceneGenerator.Serialization;
+using SceneGenerator.Serialization.Dto;
 
 namespace SceneGenerator.Console;
 class Program
 {
     static void Main(string[] args)
     {
-        Point3D point = new Point3D(100, 200, 5);
-        
-        Size3D  size = new Size3D(200, 100, 20);
-        
-        Box3D box = new Box3D(point, size);
-
-        SceneObject Kii = new SceneObject("Kii-001", SceneObjectType.Kii, box);
-
-        Box3D bounds = new Box3D(
-            new Point3D(0, 0, 0),
-            new Size3D(1000, 1000, 50));
-
-        Scene scene = new Scene("scene-001",
-            SceneMode.ThreeD,
-            bounds,
-            Kii);
-        Box3D first = new Box3D(
-            new Point3D(0, 0, 0),
-            new Size3D(100, 100, 20));
-
-        Box3D second = new Box3D(
-            new Point3D(130, 140, 0),
-            new Size3D(50, 50, 10));
-
-        double distance = first.GetHorizontalDistanceTo(second);
-        
-        SceneObject obstacle = new SceneObject(
-            "obstacle-001",
-            SceneObjectType.Obstacle,
-            new Box3D(
-                new Point3D(500, 200, 0),
-                new Size3D(60, 80, 15)));
-
-        scene.AddObstacle(obstacle);
-
-        System.Console.WriteLine(
-            $"Количество объектов после добавления: {scene.Objects.Count}");
-        DoubleRange lengthRange = new DoubleRange(20, 100);
-
-        System.Console.WriteLine(
-            $"Диапазон длины: {lengthRange.Min}–{lengthRange.Max} м");
-
-        System.Console.WriteLine(
-            $"60 м входит в диапазон: {lengthRange.Contains(60)}");
-
-        System.Console.WriteLine(
-            $"150 м входит в диапазон: {lengthRange.Contains(150)}");
-        ObstacleSizeRanges obstacleSizes = new ObstacleSizeRanges(
-            new DoubleRange(20, 100),
-            new DoubleRange(20, 100),
-            new DoubleRange(3, 40));
-
-        System.Console.WriteLine(
-            $"Длина помех: {obstacleSizes.Length.Min}–{obstacleSizes.Length.Max} м");
-
-        System.Console.WriteLine(
-            $"Ширина помех: {obstacleSizes.Width.Min}–{obstacleSizes.Width.Max} м");
-
-        System.Console.WriteLine(
-            $"Высота помех: {obstacleSizes.Height.Min}–{obstacleSizes.Height.Max} м");
-        GenerationSettings settings = new GenerationSettings
+        if (args.Length > 1)
         {
-            Mode = SceneMode.ThreeD,
+            System.Console.Error.WriteLine("Укажите один путь к файлу настроек или запустите без аргументов.");
+            Environment.ExitCode = 1;
+            return;
+        }
 
-            SceneSize = new Size3D(10000, 10000, 40),
+        string settingsPath = args.Length == 1
+            ? args[0]
+            : Path.Combine(AppContext.BaseDirectory, "settings.json");
+        IGenerationSettingsReader settingsReader = new JsonGenerationSettingsReader();
+        GenerationSettings settings;
+        try
+        {
+            settings = settingsReader.Read(settingsPath);
+        }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException
+            or FormatException or ArgumentException)
+        {
+            System.Console.Error.WriteLine($"Не удалось загрузить настройки: {error.Message}");
+            Environment.ExitCode = 1;
+            return;
+        }
 
-            KiiSize = new Size3D(200, 100, 20),
-
-            ObstacleSizes = new ObstacleSizeRanges(
-                new DoubleRange(20, 100),
-                new DoubleRange(20, 100),
-                new DoubleRange(3, 40)),
-
-            ObstacleCount = 20,
-
-            DistanceToNearestObstacle = 500,
-
-            MinDistanceBetweenObstacles = 30,
-
-            SceneCount = 10,
-
-            Seed = 12345
-        };
+        System.Console.WriteLine($"Настройки загружены: {Path.GetFullPath(settingsPath)}");
 
         System.Console.WriteLine(
             $"Режим: {settings.Mode}, сцен: {settings.SceneCount}, " +
             $"помех на сцену: {settings.ObstacleCount}");
-        GenerationSettingsValidator validator = new();
 
-        IReadOnlyList<string> errors = validator.Validate(settings);
+        GeneratedSceneSource generatedSource = new(settings);
+        ISceneSource sceneSource = generatedSource;
+        int savedSceneCount = 0;
+        string runFolderName = $"run-{DateTime.Now:yyyyMMdd-HHmmss-fff}-{Guid.NewGuid():N}";
+        string resultDirectory = Path.Combine("Result", runFolderName);
 
-        if (errors.Count == 0)
+        foreach (Scene currentScene in sceneSource.GetScenes())
         {
-            System.Console.WriteLine("Проверенные параметры корректны.");
-        }
-        else
-        {
-            foreach (string error in errors)
+            int sequenceIndex = savedSceneCount + 1;
+            ISceneExporter sceneExporter = new JsonSceneExporter(new SceneSourceDto
             {
-                System.Console.WriteLine($"Ошибка: {error}");
+                Type = "generated",
+                Seed = generatedSource.Seed,
+                SequenceIndex = sequenceIndex
+            });
+            string filePath = Path.Combine(resultDirectory, $"scene-{sequenceIndex:D6}.json");
+
+            try
+            {
+                sceneExporter.Export(currentScene, filePath);
             }
+            catch (Exception error) when (error is IOException or UnauthorizedAccessException)
+            {
+                System.Console.Error.WriteLine(
+                    $"Не удалось сохранить сцену {currentScene.Id}: {error.Message}");
+                System.Console.Error.WriteLine($"Успешно сохранено сцен: {savedSceneCount}.");
+                Environment.ExitCode = 1;
+                return;
+            }
+
+            savedSceneCount++;
+            System.Console.WriteLine(
+                $"{currentScene.Id}: объектов — {currentScene.Objects.Count}. " +
+                $"Сохранена: {Path.GetFullPath(filePath)}");
         }
-        SceneFactory factory = new();
 
-        Scene generatedScene = factory.CreateWithKii(
-            "scene-001",
-            settings);
-
-        Point3D kiiOrigin = generatedScene.Objects[0].Geometry.Origin;
-
-        System.Console.WriteLine(
-            $"Угол основания КИИ: X={kiiOrigin.X}, " +
-            $"Y={kiiOrigin.Y}, Z={kiiOrigin.Z}");
-        Random random = settings.Seed.HasValue
-            ? new Random(settings.Seed.Value)
-            : new Random();
-
-        ObstacleSizeGenerator sizeGenerator = new(random);
-
-        for (int i = 0; i < 5; i++)
-        {
-            Size3D obstacleSize = sizeGenerator.Generate(
-                settings.ObstacleSizes);
-
-            System.Console.WriteLine(
-                $"Помеха {i + 1}: " +
-                $"{obstacleSize.Length:F2} × " +
-                $"{obstacleSize.Width:F2} × " +
-                $"{obstacleSize.Height:F2} м");BoxPlacementGenerator placementGenerator = new(random);
-
-            Size3D candidateSize = sizeGenerator.Generate(
-                settings.ObstacleSizes);
-
-            Box3D candidate = placementGenerator.Generate(
-                generatedScene.Bounds,
-                candidateSize);
-
-            System.Console.WriteLine(
-                $"Положение помехи: " +
-                $"X={candidate.Origin.X:F2}, " +
-                $"Y={candidate.Origin.Y:F2}, " +
-                $"Z={candidate.Origin.Z:F2}");
-
-            System.Console.WriteLine(
-                $"Внутри сцены: {generatedScene.Bounds.Contains(candidate)}");
-            ObstaclePlacementValidator placementValidator = new();
-
-            Box3D kiiBox = generatedScene.Objects[0].Geometry;
-
-            bool overlappingAllowed = placementValidator.IsValid(
-                generatedScene,
-                kiiBox,
-                settings);
-
-            System.Console.WriteLine(
-                $"Размещение поверх КИИ разрешено: {overlappingAllowed}");
-
-            Box3D nearbyCandidate = new Box3D(
-                new Point3D(
-                    kiiBox.Origin.X + kiiBox.Size.Length + 50,
-                    kiiBox.Origin.Y,
-                    0),
-                new Size3D(20, 20, settings.ObstacleSizes.Height.Min));
-
-            bool nearbyAllowed = placementValidator.IsValid(
-                generatedScene,
-                nearbyCandidate,
-                settings);
-
-            System.Console.WriteLine(
-                $"Размещение в 50 м от КИИ разрешено: {nearbyAllowed}");
-            
-            
-        }
+        System.Console.WriteLine($"Всего сохранено сцен: {savedSceneCount}.");
     }
 }
