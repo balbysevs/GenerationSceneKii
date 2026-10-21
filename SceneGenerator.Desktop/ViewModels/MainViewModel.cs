@@ -40,4 +40,32 @@ public partial class MainViewModel : ViewModelBase
 
     [ObservableProperty]
     public partial decimal SceneHeight { get; set; } = 40m;
+    [ObservableProperty]
+    public partial decimal KiiLength { get; set; } = 200m;
+
+    [ObservableProperty]
+    public partial decimal KiiWidth { get; set; } = 100m;
+
+    [ObservableProperty]
+    public partial decimal KiiHeight { get; set; } = 20m;
+    [ObservableProperty]
+    public partial decimal ObstacleCount { get; set; } = 20m;
+
+    [ObservableProperty]
+    public partial decimal ObstacleMinLength { get; set; } = 20m;
+
+    [ObservableProperty]
+    public partial decimal ObstacleMaxLength { get; set; } = 100m;
+
+    [ObservableProperty]
+    public partial decimal ObstacleMinWidth { get; set; } = 20m;
+
+    [ObservableProperty]
+    public partial decimal ObstacleMaxWidth { get; set; } = 100m;
+
+    [ObservableProperty]
+    public partial decimal ObstacleMinHeight { get; set; } = 3m;
+
+    [ObservableProperty]
+    public partial decimal ObstacleMaxHeight { get; set; } = 40m;
 }

@@ -59,8 +59,11 @@
                     CornerRadius="8"
                     Padding="16">
 
-                <ScrollViewer HorizontalScrollBarVisibility="Disabled">
-                    <StackPanel Spacing="12">
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                              VerticalScrollBarVisibility="Auto"
+                              AllowAutoHide="False">
+                    <StackPanel Spacing="12"
+                                Margin="0,0,12,0">
 
                         <TextBlock Text="Параметры генерации"
                                    FontSize="18"
@@ -102,6 +105,120 @@
 
                         </StackPanel>
 
+                        <Border Height="1"
+                                Background="{DynamicResource PanelBorder}"
+                                Margin="0,8" />
+
+                        <TextBlock Text="Объект КИИ, м"
+                                   FontSize="16"
+                                   FontWeight="SemiBold" />
+
+                        <TextBlock Text="Длина" />
+
+                        <NumericUpDown Value="{Binding KiiLength, Mode=TwoWay}"
+                                       Minimum="50"
+                                       Maximum="4000"
+                                       Increment="10" />
+
+                        <TextBlock Text="Ширина" />
+
+                        <NumericUpDown Value="{Binding KiiWidth, Mode=TwoWay}"
+                                       Minimum="50"
+                                       Maximum="4000"
+                                       Increment="10" />
+
+                        <StackPanel Spacing="12"
+                                    IsVisible="{Binding IsThreeD}">
+
+                            <TextBlock Text="Высота" />
+
+                            <NumericUpDown Value="{Binding KiiHeight, Mode=TwoWay}"
+                                           Minimum="3"
+                                           Maximum="30"
+                                           Increment="1" />
+
+                        </StackPanel>
+                        <Border Height="1"
+        Background="{DynamicResource PanelBorder}"
+        Margin="0,8" />
+
+<TextBlock Text="Помехи"
+           FontSize="16"
+           FontWeight="SemiBold" />
+
+<TextBlock Text="Количество" />
+
+<NumericUpDown Value="{Binding ObstacleCount, Mode=TwoWay}"
+               Minimum="0"
+               Maximum="2147483647"
+               Increment="1"
+               FormatString="0" />
+
+<TextBlock Text="Размеры помех, м" />
+
+<Grid ColumnDefinitions="Auto,*,*"
+      RowDefinitions="Auto,Auto,Auto,Auto"
+      ColumnSpacing="8"
+      RowSpacing="10">
+
+    <TextBlock Grid.Row="0" Grid.Column="1"
+               Text="Мин." />
+
+    <TextBlock Grid.Row="0" Grid.Column="2"
+               Text="Макс." />
+
+    <TextBlock Grid.Row="1" Grid.Column="0"
+               Text="Длина"
+               VerticalAlignment="Center" />
+
+    <NumericUpDown Grid.Row="1" Grid.Column="1"
+                   Value="{Binding ObstacleMinLength, Mode=TwoWay}"
+                   ShowButtonSpinner="False"
+                   MinWidth="60"
+                   Minimum="20" Maximum="100" />
+
+    <NumericUpDown Grid.Row="1" Grid.Column="2"
+                   Value="{Binding ObstacleMaxLength, Mode=TwoWay}"
+                   ShowButtonSpinner="False"
+                   MinWidth="60"
+                   Minimum="20" Maximum="100" />
+
+    <TextBlock Grid.Row="2" Grid.Column="0"
+               Text="Ширина"
+               VerticalAlignment="Center" />
+
+    <NumericUpDown Grid.Row="2" Grid.Column="1"
+                   Value="{Binding ObstacleMinWidth, Mode=TwoWay}"
+                   ShowButtonSpinner="False"
+                   MinWidth="60"
+                   Minimum="20" Maximum="100" />
+
+    <NumericUpDown Grid.Row="2" Grid.Column="2"
+                   Value="{Binding ObstacleMaxWidth, Mode=TwoWay}"
+                   ShowButtonSpinner="False"
+                   MinWidth="60"
+                   Minimum="20" Maximum="100" />
+
+    <TextBlock Grid.Row="3" Grid.Column="0"
+               Text="Высота"
+               IsVisible="{Binding IsThreeD}"
+               VerticalAlignment="Center" />
+
+    <NumericUpDown Grid.Row="3" Grid.Column="1"
+                   Value="{Binding ObstacleMinHeight, Mode=TwoWay}"
+                   ShowButtonSpinner="False"
+                   MinWidth="60"
+                   IsVisible="{Binding IsThreeD}"
+                   Minimum="3" Maximum="40" />
+
+    <NumericUpDown Grid.Row="3" Grid.Column="2"
+                   Value="{Binding ObstacleMaxHeight, Mode=TwoWay}"
+                   ShowButtonSpinner="False"
+                   MinWidth="60"
+                   IsVisible="{Binding IsThreeD}"
+                   Minimum="3" Maximum="40" />
+
+</Grid>
                     </StackPanel>
                 </ScrollViewer>
             </Border>
