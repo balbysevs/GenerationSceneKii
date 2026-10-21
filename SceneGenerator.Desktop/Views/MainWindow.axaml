@@ -12,7 +12,9 @@
         Height="800"
         MinWidth="1100"
         MinHeight="650"
-        WindowStartupLocation="CenterScreen">
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource AppBackground}"
+        Foreground="{DynamicResource TextPrimary}">
 
     <Design.DataContext>
         <!-- This only sets the DataContext for the previewer in an IDE,
@@ -24,17 +26,35 @@
           RowDefinitions="Auto,*,Auto"
           RowSpacing="12">
 
-        <TextBlock Grid.Row="0"
-                   Text="Генератор сцен"
-                   FontSize="24"
-                   FontWeight="SemiBold" />
+        <Grid Grid.Row="0"
+              ColumnDefinitions="*,Auto"
+              ColumnSpacing="16">
+
+            <TextBlock Grid.Column="0"
+                       Text="Генератор сцен"
+                       Foreground="{DynamicResource AppAccent}"
+                       FontSize="24"
+                       FontWeight="SemiBold"
+                       VerticalAlignment="Center" />
+
+            <Button Grid.Column="1"
+                    Content="{Binding ThemeButtonText}"
+                    Command="{Binding ToggleThemeCommand}"
+                    Foreground="{DynamicResource AppAccent}"
+                    BorderBrush="{DynamicResource AppAccent}"
+                    MinWidth="150"
+                    HorizontalContentAlignment="Center"
+                    VerticalAlignment="Center" />
+
+        </Grid>
 
         <Grid Grid.Row="1"
               ColumnDefinitions="300,*,240"
               ColumnSpacing="12">
 
             <Border Grid.Column="0"
-                    BorderBrush="Gray"
+                    Background="{DynamicResource PanelBackground}"
+                    BorderBrush="{DynamicResource PanelBorder}"
                     BorderThickness="1"
                     CornerRadius="8"
                     Padding="16">
@@ -45,7 +65,8 @@
             </Border>
 
             <Border Grid.Column="1"
-                    BorderBrush="Gray"
+                    Background="{DynamicResource PanelBackground}"
+                    BorderBrush="{DynamicResource PanelBorder}"
                     BorderThickness="1"
                     CornerRadius="8"
                     Padding="16">
@@ -56,7 +77,8 @@
             </Border>
 
             <Border Grid.Column="2"
-                    BorderBrush="Gray"
+                    Background="{DynamicResource PanelBackground}"
+                    BorderBrush="{DynamicResource PanelBorder}"
                     BorderThickness="1"
                     CornerRadius="8"
                     Padding="16">
@@ -70,6 +92,7 @@
 
         <TextBlock Grid.Row="2"
                    Text="Готово к генерации"
+                   Foreground="{DynamicResource TextSecondary}"
                    FontSize="13" />
 
     </Grid>

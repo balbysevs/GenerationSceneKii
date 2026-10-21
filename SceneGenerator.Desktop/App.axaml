@@ -2,13 +2,37 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="SceneGenerator.Desktop.App"
              xmlns:local="using:SceneGenerator.Desktop"
-             RequestedThemeVariant="Default">
+             RequestedThemeVariant="Light">
              <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
 
     <Application.DataTemplates>
         <local:ViewLocator />
     </Application.DataTemplates>
+             <Application.Resources>
+                 <ResourceDictionary>
+                     <ResourceDictionary.ThemeDictionaries>
 
+                         <ResourceDictionary x:Key="Light">
+                             <SolidColorBrush x:Key="AppBackground" Color="#F3F5F9" />
+                             <SolidColorBrush x:Key="PanelBackground" Color="#FFFFFF" />
+                             <SolidColorBrush x:Key="PanelBorder" Color="#DDE2EB" />
+                             <SolidColorBrush x:Key="TextPrimary" Color="#192235" />
+                             <SolidColorBrush x:Key="TextSecondary" Color="#64748B" />
+                             <SolidColorBrush x:Key="AppAccent" Color="#2563EB" />
+                         </ResourceDictionary>
+
+                         <ResourceDictionary x:Key="Dark">
+                             <SolidColorBrush x:Key="AppBackground" Color="#15161C" />
+                             <SolidColorBrush x:Key="PanelBackground" Color="#1E2029" />
+                             <SolidColorBrush x:Key="PanelBorder" Color="#383C4A" />
+                             <SolidColorBrush x:Key="TextPrimary" Color="#ECECF3" />
+                             <SolidColorBrush x:Key="TextSecondary" Color="#A8AFC2" />
+                             <SolidColorBrush x:Key="AppAccent" Color="#9B7CFF" />
+                         </ResourceDictionary>
+
+                     </ResourceDictionary.ThemeDictionaries>
+                 </ResourceDictionary>
+             </Application.Resources>
     <Application.Styles>
         <FluentTheme />
     </Application.Styles>
