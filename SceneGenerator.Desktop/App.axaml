@@ -34,6 +34,11 @@
                  </ResourceDictionary>
              </Application.Resources>
     <Application.Styles>
-        <FluentTheme />
+        <FluentTheme>
+            <FluentTheme.Palettes>
+                <ColorPaletteResources x:Key="Light" Accent="#2563EB" />
+                <ColorPaletteResources x:Key="Dark" Accent="#9B7CFF" />
+            </FluentTheme.Palettes>
+        </FluentTheme>
     </Application.Styles>
 </Application>

@@ -29,4 +29,15 @@ public partial class MainViewModel : ViewModelBase
         IsDarkTheme = !IsDarkTheme;
         app.RequestedThemeVariant = IsDarkTheme ? ThemeVariant.Dark : ThemeVariant.Light;
     }
+    [ObservableProperty]
+    public partial bool IsThreeD { get; set; } = true;
+
+    [ObservableProperty]
+    public partial decimal SceneLength { get; set; } = 10000m;
+
+    [ObservableProperty]
+    public partial decimal SceneWidth { get; set; } = 10000m;
+
+    [ObservableProperty]
+    public partial decimal SceneHeight { get; set; } = 40m;
 }

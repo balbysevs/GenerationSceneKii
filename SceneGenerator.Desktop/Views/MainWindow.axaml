@@ -59,9 +59,51 @@
                     CornerRadius="8"
                     Padding="16">
 
-                <TextBlock Text="Параметры генерации"
-                           FontSize="18"
-                           FontWeight="SemiBold" />
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel Spacing="12">
+
+                        <TextBlock Text="Параметры генерации"
+                                   FontSize="18"
+                                   FontWeight="SemiBold" />
+
+                        <TextBlock Text="Режим сцены" />
+
+                        <ToggleSwitch IsChecked="{Binding IsThreeD, Mode=TwoWay}"
+                                      OnContent="3D"
+                                      OffContent="2D" />
+
+                        <TextBlock Text="Размеры сцены, м"
+                                   FontWeight="SemiBold"
+                                   Margin="0,8,0,0" />
+
+                        <TextBlock Text="Длина" />
+
+                        <NumericUpDown Value="{Binding SceneLength, Mode=TwoWay}"
+                                       Minimum="10000"
+                                       Maximum="20000"
+                                       Increment="100" />
+
+                        <TextBlock Text="Ширина" />
+
+                        <NumericUpDown Value="{Binding SceneWidth, Mode=TwoWay}"
+                                       Minimum="10000"
+                                       Maximum="20000"
+                                       Increment="100" />
+
+                        <StackPanel Spacing="12"
+                                    IsVisible="{Binding IsThreeD}">
+
+                            <TextBlock Text="Высота" />
+
+                            <NumericUpDown Value="{Binding SceneHeight, Mode=TwoWay}"
+                                           Minimum="3"
+                                           Maximum="50"
+                                           Increment="1" />
+
+                        </StackPanel>
+
+                    </StackPanel>
+                </ScrollViewer>
             </Border>
 
             <Border Grid.Column="1"
