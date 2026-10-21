@@ -1,9 +1,13 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:SceneGenerator.Desktop.ViewModels"
+        xmlns:controls="using:SceneGenerator.Desktop.Controls"
+        xmlns:models="clr-namespace:SceneGenerator.Core.Models;assembly=SceneGenerator.Core"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d"
+        d:DesignWidth="800"
+        d:DesignHeight="450"
         x:Class="SceneGenerator.Desktop.Views.MainWindow"
         x:DataType="vm:MainViewModel"
         Icon="/Assets/avalonia-logo.ico"
@@ -15,28 +19,19 @@
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource AppBackground}"
         Foreground="{DynamicResource TextPrimary}">
-
     <Design.DataContext>
         <!-- This only sets the DataContext for the previewer in an IDE,
              to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-        <vm:MainViewModel />
+        <vm:MainViewModel/>
     </Design.DataContext>
-
-    <Grid Margin="16"
-          RowDefinitions="Auto,*,Auto"
-          RowSpacing="12">
-
-        <Grid Grid.Row="0"
-              ColumnDefinitions="*,Auto"
-              ColumnSpacing="16">
-
+    <Grid Margin="16" RowDefinitions="Auto,*,Auto" RowSpacing="12">
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="16">
             <TextBlock Grid.Column="0"
                        Text="Генератор сцен"
                        Foreground="{DynamicResource AppAccent}"
                        FontSize="24"
                        FontWeight="SemiBold"
                        VerticalAlignment="Center" />
-
             <Button Grid.Column="1"
                     Content="{Binding ThemeButtonText}"
                     Command="{Binding ToggleThemeCommand}"
@@ -45,215 +40,263 @@
                     MinWidth="150"
                     HorizontalContentAlignment="Center"
                     VerticalAlignment="Center" />
-
         </Grid>
-
-        <Grid Grid.Row="1"
-              ColumnDefinitions="300,*,240"
-              ColumnSpacing="12">
-
+        <Grid Grid.Row="1" ColumnDefinitions="300,*,240" ColumnSpacing="12">
             <Border Grid.Column="0"
                     Background="{DynamicResource PanelBackground}"
                     BorderBrush="{DynamicResource PanelBorder}"
                     BorderThickness="1"
                     CornerRadius="8"
                     Padding="16">
-
-                <ScrollViewer HorizontalScrollBarVisibility="Disabled"
-                              VerticalScrollBarVisibility="Auto"
-                              AllowAutoHide="False">
-                    <StackPanel Spacing="12"
-                                Margin="0,0,12,0">
-
-                        <TextBlock Text="Параметры генерации"
-                                   FontSize="18"
-                                   FontWeight="SemiBold" />
-
-                        <TextBlock Text="Режим сцены" />
-
-                        <ToggleSwitch IsChecked="{Binding IsThreeD, Mode=TwoWay}"
-                                      OnContent="3D"
-                                      OffContent="2D" />
-
-                        <TextBlock Text="Размеры сцены, м"
-                                   FontWeight="SemiBold"
-                                   Margin="0,8,0,0" />
-
-                        <TextBlock Text="Длина" />
-
-                        <NumericUpDown Value="{Binding SceneLength, Mode=TwoWay}"
-                                       Minimum="10000"
-                                       Maximum="20000"
-                                       Increment="100" />
-
-                        <TextBlock Text="Ширина" />
-
-                        <NumericUpDown Value="{Binding SceneWidth, Mode=TwoWay}"
-                                       Minimum="10000"
-                                       Maximum="20000"
-                                       Increment="100" />
-
-                        <StackPanel Spacing="12"
-                                    IsVisible="{Binding IsThreeD}">
-
-                            <TextBlock Text="Высота" />
-
-                            <NumericUpDown Value="{Binding SceneHeight, Mode=TwoWay}"
-                                           Minimum="3"
-                                           Maximum="50"
+                <Grid RowDefinitions="Auto,*,Auto" RowSpacing="12">
+                    <TextBlock Text="Параметры генерации" FontSize="18" FontWeight="SemiBold"/>
+                    <ScrollViewer Grid.Row="1"
+                                  IsEnabled="{Binding CanEditSettings}"
+                                  HorizontalScrollBarVisibility="Disabled"
+                                  VerticalScrollBarVisibility="Auto"
+                                  AllowAutoHide="False">
+                        <StackPanel Spacing="12" Margin="0,0,12,0">
+                            <TextBlock Text="Режим сцены"/>
+                            <ToggleSwitch IsChecked="{Binding IsThreeD, Mode=TwoWay}"
+                                          OnContent="3D"
+                                          OffContent="2D" />
+                            <TextBlock Text="Размеры сцены, м" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                            <TextBlock Text="Длина"/>
+                            <NumericUpDown Value="{Binding SceneLength, Mode=TwoWay}"
+                                           Minimum="10000"
+                                           Maximum="20000"
+                                           Increment="100" />
+                            <TextBlock Text="Ширина"/>
+                            <NumericUpDown Value="{Binding SceneWidth, Mode=TwoWay}"
+                                           Minimum="10000"
+                                           Maximum="20000"
+                                           Increment="100" />
+                            <StackPanel Spacing="12" IsVisible="{Binding IsThreeD}">
+                                <TextBlock Text="Высота"/>
+                                <NumericUpDown Value="{Binding SceneHeight, Mode=TwoWay}"
+                                               Minimum="3"
+                                               Maximum="50"
+                                               Increment="1" />
+                            </StackPanel>
+                            <Border Height="1" Background="{DynamicResource PanelBorder}" Margin="0,8"/>
+                            <TextBlock Text="Объект КИИ, м" FontSize="16" FontWeight="SemiBold"/>
+                            <TextBlock Text="Длина"/>
+                            <NumericUpDown Value="{Binding KiiLength, Mode=TwoWay}"
+                                           Minimum="50"
+                                           Maximum="4000"
+                                           Increment="10" />
+                            <TextBlock Text="Ширина"/>
+                            <NumericUpDown Value="{Binding KiiWidth, Mode=TwoWay}"
+                                           Minimum="50"
+                                           Maximum="4000"
+                                           Increment="10" />
+                            <StackPanel Spacing="12" IsVisible="{Binding IsThreeD}">
+                                <TextBlock Text="Высота"/>
+                                <NumericUpDown Value="{Binding KiiHeight, Mode=TwoWay}"
+                                               Minimum="3"
+                                               Maximum="30"
+                                               Increment="1" />
+                            </StackPanel>
+                            <Border Height="1" Background="{DynamicResource PanelBorder}" Margin="0,8"/>
+                            <TextBlock Text="Помехи" FontSize="16" FontWeight="SemiBold"/>
+                            <TextBlock Text="Количество"/>
+                            <NumericUpDown Value="{Binding ObstacleCount, Mode=TwoWay}"
+                                           Minimum="0"
+                                           Maximum="2147483647"
+                                           Increment="1"
+                                           FormatString="0" />
+                            <TextBlock Text="Размеры помех, м"/>
+                            <Grid ColumnDefinitions="Auto,*,*"
+                                  RowDefinitions="Auto,Auto,Auto,Auto"
+                                  ColumnSpacing="8"
+                                  RowSpacing="10">
+                                <TextBlock Grid.Row="0" Grid.Column="1" Text="Мин."/>
+                                <TextBlock Grid.Row="0" Grid.Column="2" Text="Макс."/>
+                                <TextBlock Grid.Row="1"
+                                           Grid.Column="0"
+                                           Text="Длина"
+                                           VerticalAlignment="Center" />
+                                <NumericUpDown Grid.Row="1"
+                                               Grid.Column="1"
+                                               Value="{Binding ObstacleMinLength, Mode=TwoWay}"
+                                               ShowButtonSpinner="False"
+                                               MinWidth="60"
+                                               Minimum="20"
+                                               Maximum="100" />
+                                <NumericUpDown Grid.Row="1"
+                                               Grid.Column="2"
+                                               Value="{Binding ObstacleMaxLength, Mode=TwoWay}"
+                                               ShowButtonSpinner="False"
+                                               MinWidth="60"
+                                               Minimum="20"
+                                               Maximum="100" />
+                                <TextBlock Grid.Row="2"
+                                           Grid.Column="0"
+                                           Text="Ширина"
+                                           VerticalAlignment="Center" />
+                                <NumericUpDown Grid.Row="2"
+                                               Grid.Column="1"
+                                               Value="{Binding ObstacleMinWidth, Mode=TwoWay}"
+                                               ShowButtonSpinner="False"
+                                               MinWidth="60"
+                                               Minimum="20"
+                                               Maximum="100" />
+                                <NumericUpDown Grid.Row="2"
+                                               Grid.Column="2"
+                                               Value="{Binding ObstacleMaxWidth, Mode=TwoWay}"
+                                               ShowButtonSpinner="False"
+                                               MinWidth="60"
+                                               Minimum="20"
+                                               Maximum="100" />
+                                <TextBlock Grid.Row="3"
+                                           Grid.Column="0"
+                                           Text="Высота"
+                                           IsVisible="{Binding IsThreeD}"
+                                           VerticalAlignment="Center" />
+                                <NumericUpDown Grid.Row="3"
+                                               Grid.Column="1"
+                                               Value="{Binding ObstacleMinHeight, Mode=TwoWay}"
+                                               ShowButtonSpinner="False"
+                                               MinWidth="60"
+                                               IsVisible="{Binding IsThreeD}"
+                                               Minimum="3"
+                                               Maximum="40" />
+                                <NumericUpDown Grid.Row="3"
+                                               Grid.Column="2"
+                                               Value="{Binding ObstacleMaxHeight, Mode=TwoWay}"
+                                               ShowButtonSpinner="False"
+                                               MinWidth="60"
+                                               IsVisible="{Binding IsThreeD}"
+                                               Minimum="3"
+                                               Maximum="40" />
+                            </Grid>
+                            <Border Height="1" Background="{DynamicResource PanelBorder}" Margin="0,8"/>
+                            <TextBlock Text="Расстояния, м" FontSize="16" FontWeight="SemiBold"/>
+                            <TextBlock Text="От КИИ до ближайшей помехи" TextWrapping="Wrap"/>
+                            <NumericUpDown Value="{Binding DistanceToNearestObstacle, Mode=TwoWay}"
+                                           Minimum="100"
+                                           Maximum="2000"
+                                           Increment="10" />
+                            <TextBlock Text="Между помехами, минимум" TextWrapping="Wrap"/>
+                            <NumericUpDown Value="{Binding MinDistanceBetweenObstacles, Mode=TwoWay}"
+                                           Minimum="10"
+                                           Maximum="100"
                                            Increment="1" />
-
+                            <Border Height="1" Background="{DynamicResource PanelBorder}" Margin="0,8"/>
+                            <TextBlock Text="Генерация" FontSize="16" FontWeight="SemiBold"/>
+                            <TextBlock Text="Количество сцен"/>
+                            <NumericUpDown Value="{Binding SceneCount, Mode=TwoWay}"
+                                           Minimum="1"
+                                           Maximum="5000"
+                                           Increment="1"
+                                           FormatString="0" />
+                            <TextBlock Text="Seed"/>
+                            <NumericUpDown Value="{Binding Seed, Mode=TwoWay}"
+                                           ShowButtonSpinner="False"
+                                           Minimum="-2147483648"
+                                           Maximum="2147483647"
+                                           Increment="1"
+                                           FormatString="0" />
+                            <TextBlock Text="Оставьте Seed пустым для случайной генерации."
+                                       Foreground="{DynamicResource TextSecondary}"
+                                       FontSize="12"
+                                       TextWrapping="Wrap" />
                         </StackPanel>
-
-                        <Border Height="1"
-                                Background="{DynamicResource PanelBorder}"
-                                Margin="0,8" />
-
-                        <TextBlock Text="Объект КИИ, м"
-                                   FontSize="16"
-                                   FontWeight="SemiBold" />
-
-                        <TextBlock Text="Длина" />
-
-                        <NumericUpDown Value="{Binding KiiLength, Mode=TwoWay}"
-                                       Minimum="50"
-                                       Maximum="4000"
-                                       Increment="10" />
-
-                        <TextBlock Text="Ширина" />
-
-                        <NumericUpDown Value="{Binding KiiWidth, Mode=TwoWay}"
-                                       Minimum="50"
-                                       Maximum="4000"
-                                       Increment="10" />
-
-                        <StackPanel Spacing="12"
-                                    IsVisible="{Binding IsThreeD}">
-
-                            <TextBlock Text="Высота" />
-
-                            <NumericUpDown Value="{Binding KiiHeight, Mode=TwoWay}"
-                                           Minimum="3"
-                                           Maximum="30"
-                                           Increment="1" />
-
-                        </StackPanel>
-                        <Border Height="1"
-        Background="{DynamicResource PanelBorder}"
-        Margin="0,8" />
-
-<TextBlock Text="Помехи"
-           FontSize="16"
-           FontWeight="SemiBold" />
-
-<TextBlock Text="Количество" />
-
-<NumericUpDown Value="{Binding ObstacleCount, Mode=TwoWay}"
-               Minimum="0"
-               Maximum="2147483647"
-               Increment="1"
-               FormatString="0" />
-
-<TextBlock Text="Размеры помех, м" />
-
-<Grid ColumnDefinitions="Auto,*,*"
-      RowDefinitions="Auto,Auto,Auto,Auto"
-      ColumnSpacing="8"
-      RowSpacing="10">
-
-    <TextBlock Grid.Row="0" Grid.Column="1"
-               Text="Мин." />
-
-    <TextBlock Grid.Row="0" Grid.Column="2"
-               Text="Макс." />
-
-    <TextBlock Grid.Row="1" Grid.Column="0"
-               Text="Длина"
-               VerticalAlignment="Center" />
-
-    <NumericUpDown Grid.Row="1" Grid.Column="1"
-                   Value="{Binding ObstacleMinLength, Mode=TwoWay}"
-                   ShowButtonSpinner="False"
-                   MinWidth="60"
-                   Minimum="20" Maximum="100" />
-
-    <NumericUpDown Grid.Row="1" Grid.Column="2"
-                   Value="{Binding ObstacleMaxLength, Mode=TwoWay}"
-                   ShowButtonSpinner="False"
-                   MinWidth="60"
-                   Minimum="20" Maximum="100" />
-
-    <TextBlock Grid.Row="2" Grid.Column="0"
-               Text="Ширина"
-               VerticalAlignment="Center" />
-
-    <NumericUpDown Grid.Row="2" Grid.Column="1"
-                   Value="{Binding ObstacleMinWidth, Mode=TwoWay}"
-                   ShowButtonSpinner="False"
-                   MinWidth="60"
-                   Minimum="20" Maximum="100" />
-
-    <NumericUpDown Grid.Row="2" Grid.Column="2"
-                   Value="{Binding ObstacleMaxWidth, Mode=TwoWay}"
-                   ShowButtonSpinner="False"
-                   MinWidth="60"
-                   Minimum="20" Maximum="100" />
-
-    <TextBlock Grid.Row="3" Grid.Column="0"
-               Text="Высота"
-               IsVisible="{Binding IsThreeD}"
-               VerticalAlignment="Center" />
-
-    <NumericUpDown Grid.Row="3" Grid.Column="1"
-                   Value="{Binding ObstacleMinHeight, Mode=TwoWay}"
-                   ShowButtonSpinner="False"
-                   MinWidth="60"
-                   IsVisible="{Binding IsThreeD}"
-                   Minimum="3" Maximum="40" />
-
-    <NumericUpDown Grid.Row="3" Grid.Column="2"
-                   Value="{Binding ObstacleMaxHeight, Mode=TwoWay}"
-                   ShowButtonSpinner="False"
-                   MinWidth="60"
-                   IsVisible="{Binding IsThreeD}"
-                   Minimum="3" Maximum="40" />
-
-</Grid>
+                    </ScrollViewer>
+                    <StackPanel Grid.Row="2" Spacing="8">
+                        <ProgressBar IsVisible="{Binding IsGenerating}" IsIndeterminate="True" Height="4"/>
+                        <Button Content="Сгенерировать"
+                                Command="{Binding GenerateCommand}"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Center"
+                                Background="{DynamicResource AppAccent}"
+                                Foreground="White"
+                                Padding="12" />
                     </StackPanel>
-                </ScrollViewer>
+                </Grid>
             </Border>
-
             <Border Grid.Column="1"
                     Background="{DynamicResource PanelBackground}"
                     BorderBrush="{DynamicResource PanelBorder}"
                     BorderThickness="1"
                     CornerRadius="8"
                     Padding="16">
-
-                <TextBlock Text="Просмотр сцены"
-                           FontSize="18"
-                           FontWeight="SemiBold" />
+                <Grid RowDefinitions="Auto,*,Auto" RowSpacing="12">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                        <TextBlock Text="Вид сверху" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center" />
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
+                            <Button Content="−" Click="OnZoomOut" MinWidth="32" ToolTip.Tip="Уменьшить" />
+                            <TextBlock Text="{Binding #SceneViewport.ZoomText}" MinWidth="42"
+                                       TextAlignment="Center" VerticalAlignment="Center" />
+                            <Button Content="+" Click="OnZoomIn" MinWidth="32" ToolTip.Tip="Увеличить" />
+                            <Button Content="Вся сцена" Click="OnFitScene" />
+                        </StackPanel>
+                    </Grid>
+                    <controls:SceneView x:Name="SceneViewport" Grid.Row="1"
+                                        Scene="{Binding SelectedScene}"
+                                        KiiBrush="{DynamicResource AppAccent}"
+                                        ObstacleBrush="{DynamicResource SceneObstacleBrush}"
+                                        GridBrush="{DynamicResource SceneGridBrush}"
+                                        TextBrush="{DynamicResource TextSecondary}"
+                                        InfoBackground="{DynamicResource PanelBackground}" />
+                    <StackPanel Grid.Row="2" Spacing="8">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Border Width="12" Height="12" Background="{DynamicResource AppAccent}"
+                                    VerticalAlignment="Center" />
+                            <TextBlock Text="КИИ" FontSize="12" />
+                            <Border Width="12" Height="12" Background="{DynamicResource SceneObstacleBrush}" Margin="8,0,0,0"
+                                    VerticalAlignment="Center" />
+                            <TextBlock Text="Помехи" FontSize="12" />
+                        </StackPanel>
+                        <TextBlock Text="Колёсико — масштаб · Перетаскивание — перемещение. Мелкие объекты отмечены маркерами."
+                                   TextWrapping="Wrap" FontSize="11" Foreground="{DynamicResource TextSecondary}" />
+                        <TextBlock Text="{Binding SelectedSceneSummary}"
+                                   TextWrapping="Wrap"
+                                   FontSize="12"
+                                   Foreground="{DynamicResource TextSecondary}" />
+                    </StackPanel>
+                </Grid>
             </Border>
-
             <Border Grid.Column="2"
                     Background="{DynamicResource PanelBackground}"
                     BorderBrush="{DynamicResource PanelBorder}"
                     BorderThickness="1"
                     CornerRadius="8"
                     Padding="16">
-
-                <TextBlock Text="Сцены"
-                           FontSize="18"
-                           FontWeight="SemiBold" />
+                <Grid RowDefinitions="Auto,*" RowSpacing="12">
+                    <TextBlock Text="Сцены" FontSize="18" FontWeight="SemiBold"/>
+                    <ListBox Grid.Row="1"
+                             ItemsSource="{Binding Scenes}"
+                             SelectedItem="{Binding SelectedScene, Mode=TwoWay}"
+                             Background="Transparent"
+                             BorderThickness="0"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="models:Scene">
+                                <StackPanel Spacing="4">
+                                    <TextBlock Text="{Binding Id}" FontWeight="SemiBold"/>
+                                    <TextBlock Text="{Binding Objects.Count, StringFormat='Объектов: {0}'}"
+                                               FontSize="12"
+                                               Foreground="{DynamicResource TextSecondary}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
             </Border>
-
         </Grid>
-
-        <TextBlock Grid.Row="2"
-                   Text="Готово к генерации"
-                   Foreground="{DynamicResource TextSecondary}"
-                   FontSize="13" />
-
+        <StackPanel Grid.Row="2" Spacing="8">
+            <ScrollViewer IsVisible="{Binding HasErrors}"
+                          MaxHeight="100"
+                          HorizontalScrollBarVisibility="Disabled">
+                <TextBlock Text="{Binding ErrorMessage}"
+                           TextWrapping="Wrap"
+                           Foreground="{DynamicResource ErrorBrush}" />
+            </ScrollViewer>
+            <TextBlock Text="{Binding StatusText}"
+                       TextWrapping="Wrap"
+                       Foreground="{DynamicResource TextSecondary}"
+                       FontSize="13" />
+        </StackPanel>
     </Grid>
-
 </Window>

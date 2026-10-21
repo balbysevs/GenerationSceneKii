@@ -19,6 +19,9 @@
                              <SolidColorBrush x:Key="TextPrimary" Color="#192235" />
                              <SolidColorBrush x:Key="TextSecondary" Color="#64748B" />
                              <SolidColorBrush x:Key="AppAccent" Color="#2563EB" />
+                             <SolidColorBrush x:Key="SceneGridBrush" Color="#DEE4EF" />
+                             <SolidColorBrush x:Key="SceneObstacleBrush" Color="#64748B" />
+                             <SolidColorBrush x:Key="ErrorBrush" Color="#B91C1C" />
                          </ResourceDictionary>
 
                          <ResourceDictionary x:Key="Dark">
@@ -28,6 +31,9 @@
                              <SolidColorBrush x:Key="TextPrimary" Color="#ECECF3" />
                              <SolidColorBrush x:Key="TextSecondary" Color="#A8AFC2" />
                              <SolidColorBrush x:Key="AppAccent" Color="#9B7CFF" />
+                             <SolidColorBrush x:Key="SceneGridBrush" Color="#3D4253" />
+                             <SolidColorBrush x:Key="SceneObstacleBrush" Color="#CBD5E1" />
+                             <SolidColorBrush x:Key="ErrorBrush" Color="#FF8585" />
                          </ResourceDictionary>
 
                      </ResourceDictionary.ThemeDictionaries>
