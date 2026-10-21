@@ -7,7 +7,12 @@
         x:Class="SceneGenerator.Desktop.Views.MainWindow"
         x:DataType="vm:MainViewModel"
         Icon="/Assets/avalonia-logo.ico"
-        Title="SceneGenerator.Desktop">
+        Title="Генератор пространственных сцен"
+        Width="1280"
+        Height="800"
+        MinWidth="1100"
+        MinHeight="650"
+        WindowStartupLocation="CenterScreen">
 
     <Design.DataContext>
         <!-- This only sets the DataContext for the previewer in an IDE,
@@ -15,8 +20,58 @@
         <vm:MainViewModel />
     </Design.DataContext>
 
-    <TextBox Text="{Binding Greeting}"
-             HorizontalAlignment="Center"
-             VerticalAlignment="Center" />
+    <Grid Margin="16"
+          RowDefinitions="Auto,*,Auto"
+          RowSpacing="12">
+
+        <TextBlock Grid.Row="0"
+                   Text="Генератор сцен"
+                   FontSize="24"
+                   FontWeight="SemiBold" />
+
+        <Grid Grid.Row="1"
+              ColumnDefinitions="300,*,240"
+              ColumnSpacing="12">
+
+            <Border Grid.Column="0"
+                    BorderBrush="Gray"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="16">
+
+                <TextBlock Text="Параметры генерации"
+                           FontSize="18"
+                           FontWeight="SemiBold" />
+            </Border>
+
+            <Border Grid.Column="1"
+                    BorderBrush="Gray"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="16">
+
+                <TextBlock Text="Просмотр сцены"
+                           FontSize="18"
+                           FontWeight="SemiBold" />
+            </Border>
+
+            <Border Grid.Column="2"
+                    BorderBrush="Gray"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="16">
+
+                <TextBlock Text="Сцены"
+                           FontSize="18"
+                           FontWeight="SemiBold" />
+            </Border>
+
+        </Grid>
+
+        <TextBlock Grid.Row="2"
+                   Text="Готово к генерации"
+                   FontSize="13" />
+
+    </Grid>
 
 </Window>
