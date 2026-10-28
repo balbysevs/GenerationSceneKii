@@ -25,7 +25,7 @@ public class PolygonPrism3D
     public Point3D[] GetBasePoints() => Footprint.Outer.Select(p => new Point3D(p.X, p.Y, BaseElevation)).ToArray();
     public Point3D[] GetRoofPoints() => Footprint.Outer.Select(p => new Point3D(p.X, p.Y, BaseElevation + Height)).ToArray();
 
-    public double GetHorizontalDistanceTo(PolygonPrism3D other)
+    public virtual double GetHorizontalDistanceTo(PolygonPrism3D other)
     {
         ArgumentNullException.ThrowIfNull(other);
         return Footprint.DistanceTo(other.Footprint);

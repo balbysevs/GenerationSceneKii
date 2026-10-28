@@ -46,34 +46,44 @@ class Program
         string runFolderName = $"run-{DateTime.Now:yyyyMMdd-HHmmss-fff}-{Guid.NewGuid():N}";
         string resultDirectory = Path.Combine("Result", runFolderName);
 
-        foreach (Scene currentScene in sceneSource.GetScenes())
+        try
         {
-            int sequenceIndex = savedSceneCount + 1;
-            ISceneExporter sceneExporter = new JsonSceneExporter(new SceneSourceDto
+            foreach (Scene currentScene in sceneSource.GetScenes())
             {
-                Type = "generated",
-                Seed = generatedSource.Seed,
-                SequenceIndex = sequenceIndex
-            });
-            string filePath = Path.Combine(resultDirectory, $"scene-{sequenceIndex:D6}.json");
+                int sequenceIndex = savedSceneCount + 1;
+                ISceneExporter sceneExporter = new JsonSceneExporter(new SceneSourceDto
+                {
+                    Type = "generated",
+                    Seed = generatedSource.Seed,
+                    SequenceIndex = sequenceIndex
+                });
+                string filePath = Path.Combine(resultDirectory, $"scene-{sequenceIndex:D6}.json");
 
-            try
-            {
-                sceneExporter.Export(currentScene, filePath);
-            }
-            catch (Exception error) when (error is IOException or UnauthorizedAccessException)
-            {
-                System.Console.Error.WriteLine(
-                    $"Не удалось сохранить сцену {currentScene.Id}: {error.Message}");
-                System.Console.Error.WriteLine($"Успешно сохранено сцен: {savedSceneCount}.");
-                Environment.ExitCode = 1;
-                return;
-            }
+                try
+                {
+                    sceneExporter.Export(currentScene, filePath);
+                }
+                catch (Exception error) when (error is IOException or UnauthorizedAccessException)
+                {
+                    System.Console.Error.WriteLine(
+                        $"Не удалось сохранить сцену {currentScene.Id}: {error.Message}");
+                    System.Console.Error.WriteLine($"Успешно сохранено сцен: {savedSceneCount}.");
+                    Environment.ExitCode = 1;
+                    return;
+                }
 
-            savedSceneCount++;
-            System.Console.WriteLine(
-                $"{currentScene.Id}: объектов — {currentScene.Objects.Count}. " +
-                $"Сохранена: {Path.GetFullPath(filePath)}");
+                savedSceneCount++;
+                System.Console.WriteLine(
+                    $"{currentScene.Id}: объектов — {currentScene.Objects.Count}. " +
+                    $"Сохранена: {Path.GetFullPath(filePath)}");
+            }
+        }
+        catch (InvalidOperationException error)
+        {
+            System.Console.Error.WriteLine($"Не удалось сгенерировать сцены: {error.Message}");
+            System.Console.Error.WriteLine($"Успешно сохранено сцен: {savedSceneCount}.");
+            Environment.ExitCode = 1;
+            return;
         }
 
         System.Console.WriteLine($"Всего сохранено сцен: {savedSceneCount}.");

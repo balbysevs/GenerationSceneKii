@@ -32,14 +32,17 @@
                        FontSize="24"
                        FontWeight="SemiBold"
                        VerticalAlignment="Center" />
-            <Button Grid.Column="1"
-                    Content="{Binding ThemeButtonText}"
-                    Command="{Binding ToggleThemeCommand}"
-                    Foreground="{DynamicResource AppAccent}"
-                    BorderBrush="{DynamicResource AppAccent}"
-                    MinWidth="150"
-                    HorizontalContentAlignment="Center"
-                    VerticalAlignment="Center" />
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                <Button Content="Загрузить настройки" Command="{Binding LoadSettingsCommand}" />
+                <Button Content="Сохранить настройки" Command="{Binding SaveSettingsCommand}" />
+                <Button Content="{Binding ThemeButtonText}"
+                        Command="{Binding ToggleThemeCommand}"
+                        Foreground="{DynamicResource AppAccent}"
+                        BorderBrush="{DynamicResource AppAccent}"
+                        MinWidth="150"
+                        HorizontalContentAlignment="Center"
+                        VerticalAlignment="Center" />
+            </StackPanel>
         </Grid>
         <Grid Grid.Row="1" ColumnDefinitions="300,*,240" ColumnSpacing="12">
             <Border Grid.Column="0"
@@ -222,16 +225,33 @@
                     CornerRadius="8"
                     Padding="16">
                 <Grid RowDefinitions="Auto,*,Auto" RowSpacing="12">
-                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                        <TextBlock Text="Вид сверху" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center" />
-                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
-                            <Button Content="−" Click="OnZoomOut" MinWidth="32" ToolTip.Tip="Уменьшить" />
-                            <TextBlock Text="{Binding #SceneViewport.ZoomText}" MinWidth="42"
+                    <StackPanel Spacing="8">
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                            <TextBlock Text="{Binding #SceneViewport.ViewTitle}" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center" />
+                            <ToggleSwitch Grid.Column="1" IsVisible="{Binding #SceneViewport.Has3DScene}"
+                                          IsChecked="{Binding #SceneViewport.Show3D, Mode=TwoWay}"
+                                          OnContent="3D" OffContent="Сверху" />
+                        </Grid>
+                        <WrapPanel Orientation="Horizontal">
+                            <Button Content="−" Click="OnZoomOut" MinWidth="32" Margin="0,0,6,4" ToolTip.Tip="Уменьшить" />
+                            <TextBlock Text="{Binding #SceneViewport.ZoomText}" MinWidth="42" Margin="0,0,6,4"
                                        TextAlignment="Center" VerticalAlignment="Center" />
-                            <Button Content="+" Click="OnZoomIn" MinWidth="32" ToolTip.Tip="Увеличить" />
-                            <Button Content="Вся сцена" Click="OnFitScene" />
+                            <Button Content="+" Click="OnZoomIn" MinWidth="32" Margin="0,0,6,4" ToolTip.Tip="Увеличить" />
+                            <Button Content="Вся сцена" Click="OnFitScene" Margin="0,0,6,4" />
+                            <Button Content="К КИИ" Click="OnFocusKii" Margin="0,0,0,4" ToolTip.Tip="Приблизить объект КИИ" />
+                        </WrapPanel>
+                        <StackPanel IsVisible="{Binding #SceneViewport.Is3DActive}" Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="Масштаб высоты" FontSize="12" VerticalAlignment="Center" />
+                            <ComboBox SelectedIndex="{Binding #SceneViewport.HeightScaleIndex, Mode=TwoWay}" MinWidth="76"
+                                      ToolTip.Tip="Меняет только изображение. Размеры объектов и JSON остаются прежними.">
+                                <ComboBoxItem Content="×1" />
+                                <ComboBoxItem Content="×10" />
+                                <ComboBoxItem Content="×25" />
+                            </ComboBox>
+                            <TextBlock Text="только изображение" FontSize="11" VerticalAlignment="Center"
+                                       Foreground="{DynamicResource TextSecondary}" />
                         </StackPanel>
-                    </Grid>
+                    </StackPanel>
                     <controls:SceneView x:Name="SceneViewport" Grid.Row="1"
                                         Scene="{Binding SelectedScene}"
                                         KiiBrush="{DynamicResource AppAccent}"
@@ -248,7 +268,7 @@
                                     VerticalAlignment="Center" />
                             <TextBlock Text="Помехи" FontSize="12" />
                         </StackPanel>
-                        <TextBlock Text="Колёсико — масштаб · Перетаскивание — перемещение. Мелкие объекты отмечены маркерами."
+                        <TextBlock Text="{Binding #SceneViewport.NavigationHint}"
                                    TextWrapping="Wrap" FontSize="11" Foreground="{DynamicResource TextSecondary}" />
                         <TextBlock Text="{Binding SelectedSceneSummary}"
                                    TextWrapping="Wrap"
@@ -263,8 +283,8 @@
                     BorderThickness="1"
                     CornerRadius="8"
                     Padding="16">
-                <Grid RowDefinitions="Auto,*" RowSpacing="12">
-                    <TextBlock Text="Сцены" FontSize="18" FontWeight="SemiBold"/>
+                <Grid RowDefinitions="Auto,*,Auto" RowSpacing="12">
+                    <TextBlock Text="{Binding Scenes.Count, StringFormat='Сцены · {0}'}" FontSize="18" FontWeight="SemiBold"/>
                     <ListBox Grid.Row="1"
                              ItemsSource="{Binding Scenes}"
                              SelectedItem="{Binding SelectedScene, Mode=TwoWay}"
@@ -282,6 +302,26 @@
                             </DataTemplate>
                         </ListBox.ItemTemplate>
                     </ListBox>
+                    <StackPanel Grid.Row="2" Spacing="8">
+                        <ProgressBar IsVisible="{Binding IsSaving}" IsIndeterminate="True" Height="4" />
+                        <Button Content="Сохранить сцену"
+                                Command="{Binding SaveSelectedCommand}"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Center"
+                                Foreground="{DynamicResource AppAccent}"
+                                BorderBrush="{DynamicResource AppAccent}" />
+                        <Button Content="Сохранить все"
+                                Command="{Binding SaveAllCommand}"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Center" />
+                        <Button Content="Удалить сцену" Command="{Binding DeleteSelectedCommand}"
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                                Foreground="{DynamicResource ErrorBrush}"
+                                BorderBrush="{DynamicResource ErrorBrush}" />
+                        <Button Content="Очистить список" Command="{Binding ClearScenesCommand}"
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                                Foreground="{DynamicResource ErrorBrush}" />
+                    </StackPanel>
                 </Grid>
             </Border>
         </Grid>

@@ -17,6 +17,9 @@ public partial class MainWindow : Window
     private void OnZoomOut(object? sender, RoutedEventArgs e) =>
         this.FindControl<SceneView>("SceneViewport")?.ZoomOut();
 
+    private void OnFocusKii(object? sender, RoutedEventArgs e) =>
+        this.FindControl<SceneView>("SceneViewport")?.FocusKii();
+
     private void OnFitScene(object? sender, RoutedEventArgs e) =>
         this.FindControl<SceneView>("SceneViewport")?.FitScene();
 }
