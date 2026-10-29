@@ -22,7 +22,8 @@ public partial class App : Application
             window.DataContext = new MainViewModel(
                 new StorageOutputFolderPicker(window),
                 new WindowConfirmationService(window),
-                new StorageSettingsFilePicker(window));
+                new StorageSettingsFilePicker(window),
+                new WindowOsmImportDialog(window));
             desktop.MainWindow = window;
         }
 

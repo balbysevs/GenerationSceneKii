@@ -175,15 +175,36 @@ internal sealed class Scene3DRenderer : IDisposable
         int right = Math.Min(_width - 1, (int)Math.Ceiling(Math.Max(a.X, Math.Max(b.X, c.X))));
         int top = Math.Max(0, (int)Math.Floor(Math.Min(a.Y, Math.Min(b.Y, c.Y))));
         int bottom = Math.Min(_height - 1, (int)Math.Ceiling(Math.Max(a.Y, Math.Max(b.Y, c.Y))));
+        if (left > right || top > bottom) return;
+
+        double waStep = -(c.Y - b.Y) / area;
+        double wbStep = -(a.Y - c.Y) / area;
+        double wcStep = -waStep - wbStep;
+        double depthStep = waStep * (a.Depth - c.Depth) + wbStep * (b.Depth - c.Depth);
         for (int y = top; y <= bottom; y++)
-        for (int x = left; x <= right; x++)
         {
-            double wa = Cross(b, c, x + .5, y + .5) / area;
-            double wb = Cross(c, a, x + .5, y + .5) / area;
-            double wc = 1 - wa - wb;
-            if (wa >= -1e-9 && wb >= -1e-9 && wc >= -1e-9)
-                Pixel(x, y, wa * a.Depth + wb * b.Depth + wc * c.Depth, owner, color);
+            double wa = Cross(b, c, .5, y + .5) / area;
+            double wb = Cross(c, a, .5, y + .5) / area;
+            double first = left, last = right;
+            // Clip this scanline to the three barycentric half-planes before visiting pixels.
+            if (!ClipWeight(wa, waStep, ref first, ref last) ||
+                !ClipWeight(wb, wbStep, ref first, ref last) ||
+                !ClipWeight(1 - wa - wb, wcStep, ref first, ref last)) continue;
+            int start = (int)Math.Ceiling(first), end = (int)Math.Floor(last);
+            double depth = (wa + waStep * start) * (a.Depth - c.Depth) +
+                (wb + wbStep * start) * (b.Depth - c.Depth) + c.Depth;
+            for (int x = start; x <= end; x++, depth += depthStep)
+                Pixel(x, y, depth, owner, color);
         }
+    }
+
+    private static bool ClipWeight(double value, double step, ref double first, ref double last)
+    {
+        if (step == 0) return value >= -1e-9;
+        double crossing = (-1e-9 - value) / step;
+        if (step > 0) first = Math.Max(first, crossing);
+        else last = Math.Min(last, crossing);
+        return first <= last;
     }
 
     private static double Cross(Vertex a, Vertex b, double x, double y) => (b.X - a.X) * (y - a.Y) - (b.Y - a.Y) * (x - a.X);
@@ -196,9 +217,10 @@ internal sealed class Scene3DRenderer : IDisposable
             !Clip(-dy, a.Y, ref t0, ref t1) || !Clip(dy, _height - 1 - a.Y, ref t0, ref t1)) return;
         Vertex start = Lerp(a, b, t0), end = Lerp(a, b, t1);
         int steps = Math.Max(1, (int)Math.Ceiling(Math.Max(Math.Abs(end.X - start.X), Math.Abs(end.Y - start.Y))));
+        double step = 1.0 / steps;
         for (int i = 0; i <= steps; i++)
         {
-            Vertex p = Lerp(start, end, (double)i / steps);
+            Vertex p = Lerp(start, end, i * step);
             int x = (int)Math.Round(p.X), y = (int)Math.Round(p.Y);
             if (x >= 0 && x < _width && y >= 0 && y < _height) Pixel(x, y, p.Depth + .03, owner, color);
         }

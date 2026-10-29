@@ -8,6 +8,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SceneGenerator.Serializatio
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SceneGenerator.Desktop", "SceneGenerator.Desktop\SceneGenerator.Desktop.csproj", "{D761FBF3-9062-4516-BAFF-33FD5FB442D0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SceneGenerator.OpenStreetMap", "SceneGenerator.OpenStreetMap\SceneGenerator.OpenStreetMap.csproj", "{20D191F6-9133-4F10-A014-A087671D697B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -66,6 +68,18 @@ Global
 		{D761FBF3-9062-4516-BAFF-33FD5FB442D0}.Release|x64.Build.0 = Release|Any CPU
 		{D761FBF3-9062-4516-BAFF-33FD5FB442D0}.Release|x86.ActiveCfg = Release|Any CPU
 		{D761FBF3-9062-4516-BAFF-33FD5FB442D0}.Release|x86.Build.0 = Release|Any CPU
+		{20D191F6-9133-4F10-A014-A087671D697B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{20D191F6-9133-4F10-A014-A087671D697B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{20D191F6-9133-4F10-A014-A087671D697B}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{20D191F6-9133-4F10-A014-A087671D697B}.Debug|x64.Build.0 = Debug|Any CPU
+		{20D191F6-9133-4F10-A014-A087671D697B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{20D191F6-9133-4F10-A014-A087671D697B}.Debug|x86.Build.0 = Debug|Any CPU
+		{20D191F6-9133-4F10-A014-A087671D697B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{20D191F6-9133-4F10-A014-A087671D697B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{20D191F6-9133-4F10-A014-A087671D697B}.Release|x64.ActiveCfg = Release|Any CPU
+		{20D191F6-9133-4F10-A014-A087671D697B}.Release|x64.Build.0 = Release|Any CPU
+		{20D191F6-9133-4F10-A014-A087671D697B}.Release|x86.ActiveCfg = Release|Any CPU
+		{20D191F6-9133-4F10-A014-A087671D697B}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

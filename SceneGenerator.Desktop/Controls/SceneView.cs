@@ -32,7 +32,7 @@ public class SceneView : Control
     public static readonly StyledProperty<bool> Show3DProperty =
         AvaloniaProperty.Register<SceneView, bool>(nameof(Show3D), true);
     public static readonly StyledProperty<int> HeightScaleIndexProperty =
-        AvaloniaProperty.Register<SceneView, int>(nameof(HeightScaleIndex), 1, validate: value => value >= 0 && value <= 2);
+        AvaloniaProperty.Register<SceneView, int>(nameof(HeightScaleIndex), 0, validate: value => value >= 0 && value <= 2);
     public static readonly DirectProperty<SceneView, bool> Has3DSceneProperty =
         AvaloniaProperty.RegisterDirect<SceneView, bool>(nameof(Has3DScene), view => view.Has3DScene);
     public static readonly DirectProperty<SceneView, bool> Is3DActiveProperty =
@@ -66,6 +66,7 @@ public class SceneView : Control
     private string _navigationHint = "Колёсико — масштаб · Перетаскивание — перемещение. Мелкие объекты отмечены маркерами.";
     private double _azimuth = -55, _elevation = 35;
     private bool _isRotating;
+    private Point3D? _rotationAnchor;
     private IPointer? _dragPointer;
     private MouseButton _dragButton;
     private double _zoom = 1;
@@ -92,6 +93,7 @@ public class SceneView : Control
         _azimuth = -55;
         _elevation = 35;
         _isPanning = _isRotating = false;
+        _rotationAnchor = null;
         _dragPointer?.Capture(null);
         _dragPointer = null;
         Cursor = null;
@@ -141,7 +143,9 @@ public class SceneView : Control
     {
         if (!Is3DActive || !double.IsFinite(azimuthDelta) || !double.IsFinite(elevationDelta) ||
             !TryGetProjection3D(out SceneProjection3D before)) return;
-        Point3D anchor = Anchor3D(before, before.Plot.Center);
+        // A drag keeps one world-space anchor; pointer events must not rerasterize the previous frame.
+        Point3D anchor = _isRotating && _rotationAnchor is { } dragAnchor
+            ? dragAnchor : Anchor3D(before, before.Plot.Center);
         _azimuth = ((_azimuth + azimuthDelta) % 360 + 540) % 360 - 180;
         _elevation = Math.Clamp(_elevation + elevationDelta, 10, 80);
         if (TryGetProjection3D(out SceneProjection3D after)) _pan += before.Plot.Center - after.ToScreen(anchor);
@@ -459,6 +463,8 @@ public class SceneView : Control
         _dragButton = buttons.IsLeftButtonPressed ? MouseButton.Left : buttons.IsRightButtonPressed ? MouseButton.Right : MouseButton.Middle;
         _isRotating = Is3DActive && _dragButton == MouseButton.Left && !e.KeyModifiers.HasFlag(KeyModifiers.Shift);
         _isPanning = !_isRotating;
+        _rotationAnchor = _isRotating && TryGetProjection3D(out var rotationProjection)
+            ? Anchor3D(rotationProjection, rotationProjection.Plot.Center) : null;
         _dragPosition = e.GetPosition(this);
         _dragPointer = e.Pointer;
         e.Pointer.Capture(this);
@@ -472,6 +478,7 @@ public class SceneView : Control
         base.OnPointerReleased(e);
         if ((!_isPanning && !_isRotating) || e.InitialPressMouseButton != _dragButton) return;
         _isPanning = _isRotating = false;
+        _rotationAnchor = null;
         _dragPointer = null;
         e.Pointer.Capture(null);
         Cursor = null;
@@ -483,6 +490,7 @@ public class SceneView : Control
     {
         base.OnPointerCaptureLost(e);
         _isPanning = _isRotating = false;
+        _rotationAnchor = null;
         _dragPointer = null;
         Cursor = null;
         ClearHover();

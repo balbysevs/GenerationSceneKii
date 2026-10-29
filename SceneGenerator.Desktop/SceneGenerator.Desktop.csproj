@@ -25,5 +25,6 @@
   <ItemGroup>
     <ProjectReference Include="../SceneGenerator.Core/SceneGenerator.Core.csproj" />
     <ProjectReference Include="../SceneGenerator.Serialization/SceneGenerator.Serialization.csproj" />
+    <ProjectReference Include="../SceneGenerator.OpenStreetMap/SceneGenerator.OpenStreetMap.csproj" />
   </ItemGroup>
 </Project>

@@ -1,0 +1,126 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:SceneGenerator.Desktop.ViewModels"
+        xmlns:controls="using:SceneGenerator.Desktop.Controls"
+        x:Class="SceneGenerator.Desktop.Views.OsmImportWindow"
+        x:DataType="vm:OsmImportViewModel"
+        Title="Реальная территория · OpenStreetMap"
+        Width="1180" Height="900" MinWidth="1000" MinHeight="800"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource AppBackground}" Foreground="{DynamicResource TextPrimary}">
+    <Grid Margin="20" RowDefinitions="Auto,*,Auto" RowSpacing="14">
+        <StackPanel Spacing="4">
+            <TextBlock Text="Сцена по реальной территории" FontSize="24" FontWeight="SemiBold"
+                       Foreground="{DynamicResource AppAccent}"/>
+            <TextBlock Text="Контуры OSM → выбор КИИ → уточнение высот → просмотр и сохранение сцены"
+                       TextWrapping="Wrap"/>
+        </StackPanel>
+        <Grid Grid.Row="1" ColumnDefinitions="290,*" ColumnSpacing="16">
+            <Border Background="{DynamicResource PanelBackground}" BorderBrush="{DynamicResource PanelBorder}"
+                    BorderThickness="1" CornerRadius="8" Padding="14">
+                <Grid RowDefinitions="*,Auto" RowSpacing="12">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel Margin="0,0,16,0" Spacing="8" IsEnabled="{Binding CanEdit}">
+                        <TextBlock Text="Центр и размеры области" FontSize="17" FontWeight="SemiBold"/>
+                        <TextBlock Text="Широта, °"/>
+                        <NumericUpDown Value="{Binding Latitude, Mode=TwoWay}" Minimum="-80" Maximum="80"
+                                       Increment="0.001" FormatString="0.000000" ShowButtonSpinner="False"/>
+                        <TextBlock Text="Долгота, °"/>
+                        <NumericUpDown Value="{Binding Longitude, Mode=TwoWay}" Minimum="-180" Maximum="180"
+                                       Increment="0.001" FormatString="0.000000" ShowButtonSpinner="False"/>
+                        <TextBlock Text="Длина по X (восток), м"/>
+                        <NumericUpDown Value="{Binding AreaLength, Mode=TwoWay}" Minimum="100" Maximum="20000"
+                                       Increment="100" ShowButtonSpinner="False"/>
+                        <TextBlock Text="Ширина по Y (север), м"/>
+                        <NumericUpDown Value="{Binding AreaWidth, Mode=TwoWay}" Minimum="100" Maximum="20000"
+                                       Increment="100" ShowButtonSpinner="False"/>
+                        <ToggleSwitch OnContent="3D" OffContent="2D" IsChecked="{Binding IsThreeD, Mode=TwoWay}"/>
+                        <TextBlock Text="Оценка неизвестных высот" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                        <TextBlock Text="Высота этажа, м"/>
+                        <NumericUpDown Value="{Binding FloorHeight, Mode=TwoWay}" Minimum="1" Maximum="10"
+                                       Increment="0.1" ShowButtonSpinner="False"/>
+                        <TextBlock Text="Если нет высоты и этажности, м" TextWrapping="Wrap"/>
+                        <NumericUpDown Value="{Binding DefaultHeight, Mode=TwoWay}" Minimum="0.1" Maximum="1000"
+                                       ShowButtonSpinner="False"/>
+                        <TextBlock Text="Сервер Overpass (HTTPS)" FontSize="12" Margin="0,8,0,0"/>
+                        <TextBox Text="{Binding OverpassEndpoint, Mode=TwoWay}" FontSize="11" TextWrapping="Wrap"/>
+                        <TextBlock Text="Здесь задаётся центр области. КИИ выберите после загрузки. Размеры реальных зданий не подгоняются под ограничения случайной генерации."
+                                   FontSize="12" TextWrapping="Wrap" Margin="0,8,0,0"/>
+                    </StackPanel>
+                </ScrollViewer>
+                <StackPanel Grid.Row="1" Spacing="8" IsEnabled="{Binding CanEdit}">
+                        <Button Content="Загрузить из OSM" Command="{Binding LoadOnlineCommand}"
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="0,8,0,0"/>
+                        <Button Content="Открыть JSON / проект…" Command="{Binding OpenFileCommand}"
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                        <Button Content="Сохранить проект импорта…" Command="{Binding SaveProjectCommand}"
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                </StackPanel>
+                </Grid>
+            </Border>
+            <Grid Grid.Column="1" RowDefinitions="*,160,Auto" RowSpacing="10">
+                <Border Background="{DynamicResource PanelBackground}" BorderBrush="{DynamicResource PanelBorder}"
+                        BorderThickness="1" CornerRadius="8" ClipToBounds="True">
+                    <controls:OsmBuildingsPreview Buildings="{Binding Buildings}"
+                        SelectedBuilding="{Binding SelectedBuilding, Mode=TwoWay}"
+                        AreaLength="{Binding LoadedLength}" AreaWidth="{Binding LoadedWidth}"
+                        AccentBrush="{DynamicResource AppAccent}" TextBrush="{DynamicResource TextPrimary}"
+                        GridBrush="{DynamicResource PanelBorder}" IsEnabled="{Binding CanEdit}"/>
+                </Border>
+                <ListBox Grid.Row="1" ItemsSource="{Binding Buildings}" SelectedItem="{Binding SelectedBuilding, Mode=TwoWay}"
+                         IsEnabled="{Binding CanEdit}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate x:DataType="vm:OsmBuildingItemViewModel">
+                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                                <CheckBox IsChecked="{Binding Included, Mode=TwoWay}" ToolTip.Tip="Включить здание в сцену"/>
+                                <TextBlock Grid.Column="1" Text="{Binding Label}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+                <Border Grid.Row="2" Background="{DynamicResource PanelBackground}" BorderBrush="{DynamicResource PanelBorder}"
+                        BorderThickness="1" CornerRadius="8" Padding="12" IsEnabled="{Binding CanEdit}">
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Выбранное здание станет КИИ" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding SelectedBuilding.Label}" TextTrimming="CharacterEllipsis"/>
+                        <Grid ColumnDefinitions="*,140" ColumnSpacing="10" IsVisible="{Binding IsThreeD}">
+                            <StackPanel Spacing="2">
+                                <TextBlock Text="Высота верхней точки от земли, м" TextWrapping="Wrap"/>
+                                <TextBlock Text="{Binding SelectedBuilding.HeightDescription}" FontSize="12" TextWrapping="Wrap"/>
+                                <TextBlock Text="{Binding SelectedBuilding.GroundLabel}" FontSize="12"/>
+                            </StackPanel>
+                            <NumericUpDown Grid.Column="1" Value="{Binding SelectedBuilding.TopHeight, Mode=TwoWay}"
+                                           Minimum="0.1" Maximum="1000" ShowButtonSpinner="False" VerticalAlignment="Center"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Grid>
+        <StackPanel Grid.Row="2" Spacing="8">
+            <ScrollViewer MaxHeight="100" VerticalScrollBarVisibility="Auto">
+                <TextBlock Text="{Binding QualityText}" TextWrapping="Wrap" FontSize="12" Margin="0,0,16,0"/>
+            </ScrollViewer>
+            <TextBlock Text="{Binding CreateSceneHint}" TextWrapping="Wrap" FontWeight="SemiBold"/>
+            <Border IsVisible="{Binding HasErrors}" BorderBrush="{DynamicResource ErrorBrush}"
+                    BorderThickness="1" CornerRadius="6" Padding="10" Background="{DynamicResource PanelBackground}">
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Не удалось выполнить операцию" FontWeight="SemiBold" Foreground="{DynamicResource ErrorBrush}"/>
+                    <ScrollViewer MaxHeight="85" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <TextBlock Text="{Binding ErrorMessage}" ToolTip.Tip="{Binding ErrorMessage}" TextWrapping="Wrap"
+                                   Foreground="{DynamicResource ErrorBrush}" Margin="0,0,16,0"/>
+                    </ScrollViewer>
+                </StackPanel>
+            </Border>
+            <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" Height="3"/>
+            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="12">
+                <StackPanel Spacing="4" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding StatusText}" TextWrapping="Wrap" FontSize="12"/>
+                    <TextBlock Text="© OpenStreetMap contributors · ODbL · openstreetmap.org/copyright" FontSize="11"/>
+                </StackPanel>
+                <Button Grid.Column="1" Content="Отменить операцию" Command="{Binding CancelCommand}" IsVisible="{Binding IsBusy}"/>
+                <Button Grid.Column="2" Content="Использовать сцену" Command="{Binding CreateSceneCommand}"
+                        Foreground="{DynamicResource AppAccent}" BorderBrush="{DynamicResource AppAccent}"/>
+            </Grid>
+        </StackPanel>
+    </Grid>
+</Window>

@@ -91,28 +91,28 @@ public partial class MainViewModel : ViewModelBase
     [NotifyPropertyChangedFor(nameof(CanEditSettings))]
     [NotifyCanExecuteChangedFor(nameof(GenerateCommand), nameof(SaveSelectedCommand), nameof(SaveAllCommand),
         nameof(DeleteSelectedCommand), nameof(ClearScenesCommand),
-        nameof(LoadSettingsCommand), nameof(SaveSettingsCommand))]
+        nameof(LoadSettingsCommand), nameof(SaveSettingsCommand), nameof(ImportOsmCommand))]
     public partial bool IsGenerating { get; set; }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanEditSettings))]
     [NotifyCanExecuteChangedFor(nameof(GenerateCommand), nameof(SaveSelectedCommand), nameof(SaveAllCommand),
         nameof(DeleteSelectedCommand), nameof(ClearScenesCommand),
-        nameof(LoadSettingsCommand), nameof(SaveSettingsCommand))]
+        nameof(LoadSettingsCommand), nameof(SaveSettingsCommand), nameof(ImportOsmCommand))]
     public partial bool IsSaving { get; set; }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanEditSettings))]
     [NotifyCanExecuteChangedFor(nameof(GenerateCommand), nameof(SaveSelectedCommand), nameof(SaveAllCommand),
         nameof(DeleteSelectedCommand), nameof(ClearScenesCommand),
-        nameof(LoadSettingsCommand), nameof(SaveSettingsCommand))]
+        nameof(LoadSettingsCommand), nameof(SaveSettingsCommand), nameof(ImportOsmCommand))]
     public partial bool IsConfirming { get; set; }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanEditSettings))]
     [NotifyCanExecuteChangedFor(nameof(GenerateCommand), nameof(SaveSelectedCommand), nameof(SaveAllCommand),
         nameof(DeleteSelectedCommand), nameof(ClearScenesCommand),
-        nameof(LoadSettingsCommand), nameof(SaveSettingsCommand))]
+        nameof(LoadSettingsCommand), nameof(SaveSettingsCommand), nameof(ImportOsmCommand))]
     public partial bool IsWorkingWithSettings { get; set; }
 
     public bool CanEditSettings => !IsGenerating && !IsSaving && !IsConfirming && !IsWorkingWithSettings;

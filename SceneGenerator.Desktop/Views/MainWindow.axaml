@@ -33,6 +33,7 @@
                        FontWeight="SemiBold"
                        VerticalAlignment="Center" />
             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                <Button Content="Территория OSM" Command="{Binding ImportOsmCommand}" />
                 <Button Content="Загрузить настройки" Command="{Binding LoadSettingsCommand}" />
                 <Button Content="Сохранить настройки" Command="{Binding SaveSettingsCommand}" />
                 <Button Content="{Binding ThemeButtonText}"
@@ -242,9 +243,9 @@
                         </WrapPanel>
                         <StackPanel IsVisible="{Binding #SceneViewport.Is3DActive}" Orientation="Horizontal" Spacing="8">
                             <TextBlock Text="Масштаб высоты" FontSize="12" VerticalAlignment="Center" />
-                            <ComboBox SelectedIndex="{Binding #SceneViewport.HeightScaleIndex, Mode=TwoWay}" MinWidth="76"
+                            <ComboBox SelectedIndex="{Binding #SceneViewport.HeightScaleIndex, Mode=TwoWay}" MinWidth="170"
                                       ToolTip.Tip="Меняет только изображение. Размеры объектов и JSON остаются прежними.">
-                                <ComboBoxItem Content="×1" />
+                                <ComboBoxItem Content="×1 — без увеличения" />
                                 <ComboBoxItem Content="×10" />
                                 <ComboBoxItem Content="×25" />
                             </ComboBox>
