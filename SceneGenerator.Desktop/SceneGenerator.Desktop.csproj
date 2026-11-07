@@ -3,7 +3,11 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
+    <Version>0.1.0</Version>
+    <Product>SceneGen</Product>
+    <Description>Генератор пространственных сцен</Description>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon Condition="'$(RuntimeIdentifier)' == 'win-x64'">../packaging/windows/SceneGen.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>

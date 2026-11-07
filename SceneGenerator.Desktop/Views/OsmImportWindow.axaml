@@ -4,7 +4,8 @@
         xmlns:controls="using:SceneGenerator.Desktop.Controls"
         x:Class="SceneGenerator.Desktop.Views.OsmImportWindow"
         x:DataType="vm:OsmImportViewModel"
-        Title="Реальная территория · OpenStreetMap"
+        Title="SceneGen · Реальная территория · OpenStreetMap"
+        Icon="/Assets/scenegen.png"
         Width="1180" Height="900" MinWidth="1000" MinHeight="800"
         WindowStartupLocation="CenterOwner"
         Background="{DynamicResource AppBackground}" Foreground="{DynamicResource TextPrimary}">
@@ -71,9 +72,10 @@
                          IsEnabled="{Binding CanEdit}">
                     <ListBox.ItemTemplate>
                         <DataTemplate x:DataType="vm:OsmBuildingItemViewModel">
-                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
-                                <CheckBox IsChecked="{Binding Included, Mode=TwoWay}" ToolTip.Tip="Включить здание в сцену"/>
+                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                                <CheckBox Content="В сцене" IsChecked="{Binding Included, Mode=TwoWay}" ToolTip.Tip="Включить здание в сцену"/>
                                 <TextBlock Grid.Column="1" Text="{Binding Label}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                <CheckBox Grid.Column="2" Content="КИИ" IsChecked="{Binding IsKii, Mode=TwoWay}"/>
                             </Grid>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
@@ -81,7 +83,8 @@
                 <Border Grid.Row="2" Background="{DynamicResource PanelBackground}" BorderBrush="{DynamicResource PanelBorder}"
                         BorderThickness="1" CornerRadius="8" Padding="12" IsEnabled="{Binding CanEdit}">
                     <StackPanel Spacing="6">
-                        <TextBlock Text="Выбранное здание станет КИИ" FontWeight="SemiBold"/>
+                        <TextBlock Text="Параметры выбранного здания" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding KiiCount, StringFormat='Выбрано КИИ: {0}'}"/>
                         <TextBlock Text="{Binding SelectedBuilding.Label}" TextTrimming="CharacterEllipsis"/>
                         <Grid ColumnDefinitions="*,140" ColumnSpacing="10" IsVisible="{Binding IsThreeD}">
                             <StackPanel Spacing="2">

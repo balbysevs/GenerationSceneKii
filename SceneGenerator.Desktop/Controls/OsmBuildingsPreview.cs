@@ -79,10 +79,10 @@ public sealed class OsmBuildingsPreview : Control
                     stream.EndFigure(true);
                 }
             }
-            IBrush fill = !item.Included ? Brushes.DimGray : ReferenceEquals(item, SelectedBuilding) ? AccentBrush : item.IsEstimated ? Brushes.DarkGoldenrod : Brushes.SlateGray;
+            IBrush fill = !item.Included ? Brushes.DimGray : item.IsKii ? AccentBrush : item.IsEstimated ? Brushes.DarkGoldenrod : Brushes.SlateGray;
             context.DrawGeometry(fill, new Pen(TextBrush, ReferenceEquals(item, SelectedBuilding) ? 2 : 0.6), geometry);
         }
-        var label = new FormattedText("Север ↑ · оранжевый — оценка высоты · щелчок — выбрать КИИ",
+        var label = new FormattedText("Север ↑ · оранжевый — оценка высоты · щелчок — параметры · КИИ — галочкой в списке",
             System.Globalization.CultureInfo.CurrentCulture, FlowDirection.LeftToRight, Typeface.Default, 11, TextBrush);
         context.DrawText(label, new Point(10, 8));
     }

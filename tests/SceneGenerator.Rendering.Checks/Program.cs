@@ -66,7 +66,7 @@ SceneProjection3D Projection(SceneView v){
 Point Screen(SceneView v,double x,double y,double z){Check(v.TryProjectPoint(new Point3D(x,y,z),out Point p),"projection available");return p;}
 Rect KiiBounds(SceneView v){var g=v.Scene!.Objects[0].Geometry;var points=g.GetBasePoints().Concat(g.GetRoofPoints()).Select(p=>Screen(v,p.X,p.Y,p.Z)).ToArray();double minX=points.Min(p=>p.X),minY=points.Min(p=>p.Y);return new Rect(minX,minY,points.Max(p=>p.X)-minX,points.Max(p=>p.Y)-minY);}
 
-// Check the projection against its orthonormal camera basis, the inverse ray and the ground plane.
+
 foreach(double yaw in new[]{-180d,-60,0,55,140})foreach(double elevation in new[]{10d,35,80})foreach(double heightScale in new[]{1d,10,25}){
  var projection=new SceneProjection3D(scene,new Rect(18,18,764,564),1,default,yaw,elevation,heightScale);
  var p=new Point3D(420,580,25);var screen=projection.ToScreen(p);double depth=projection.Depth(p.X,p.Y,p.Z);
@@ -91,7 +91,7 @@ Check(ReferenceEquals(view.FindObjectAt(Screen(view,315,365,23)),scene.Objects[2
 Check(ReferenceEquals(view.FindObjectAt(Screen(view,1200,180,50)),scene.Objects[3]),"elevated object's roof can be selected");
 Snapshot(view,"3d-courtyard.png");
 
-// Independent analytic ray intersections test visibility of roofs and all outer/inner walls.
+
 SceneObject? RayHit(Scene scene,SceneProjection3D camera,Point screen){
  Point3D origin=camera.Unproject(screen,0);double best=double.NegativeInfinity;SceneObject? found=null;
  foreach(var item in scene.Objects){
@@ -133,7 +133,7 @@ Check(hits>300&&occluded>20,"ray tests cover buildings and obstacles");
 Console.WriteLine($"Ray visibility: {hits} object hits, {occluded} obstacle hits, {timer.ElapsedMilliseconds} ms.");
 view.FitScene();view.HeightScaleIndex=1;
 
-// Drawing order cannot select an object hidden behind a nearer object.
+
 var reversed=View(MakeScene(reverse:true));reversed.HeightScaleIndex=1;
 for(int y=30;y<570;y+=19)for(int x=30;x<770;x+=19){
  var p=new Point(x+.25,y+.25);Check(view.FindObjectAt(p)?.Id==reversed.FindObjectAt(p)?.Id,"visibility independent of object enumeration order");
@@ -163,7 +163,7 @@ view.Scene=null;Check(!view.Has3DScene&&!view.Is3DActive&&view.FindObjectAt(new 
 view.FocusKii();view.RotateView(50,20);view.ZoomIn();
 Check(!view.TryProjectPoint(new Point3D(0,0,0),out _),"empty viewer has no projection");
 
-// Exercise the actual pointer handlers rather than only camera helper methods.
+
 view.Scene=scene;view.HeightScaleIndex=0;view.FitScene();
 var gestureHost=new Window{Content=view,Width=800,Height=600};gestureHost.Measure(new Size(800,600));gestureHost.Arrange(new Rect(0,0,800,600));
 var pointer=new Avalonia.Input.Pointer(1,PointerType.Mouse,true);
@@ -201,14 +201,14 @@ Press(new Point(300,300),MouseButton.Left);Move(new Point(320,315),RawInputModif
 Near(shiftedScreen.X-initialScreen.X,20,"2D left drag pans X");Near(shiftedScreen.Y-initialScreen.Y,15,"2D left drag pans Y");Release(new Point(320,315),MouseButton.Left);view.Show3D=true;
 gestureHost.Content=null;gestureHost.Close();view.Measure(new Size(800,600));view.Arrange(new Rect(0,0,800,600));
 
-// Even the largest view-only height scale must keep a narrow, tall KII inside the viewport on focus.
+
 var tallScene=new Scene("tall",SceneMode.ThreeD,new Box3D(new Point3D(0,0,0),new Size3D(10000,10000,50)),
  new SceneObject("kii-tall",SceneObjectType.Kii,new Box3D(new Point3D(4975,4975,0),new Size3D(50,50,30))));
 view.Scene=tallScene;view.HeightScaleIndex=2;view.FocusKii();
 Check(Projection(view).Plot.Contains(KiiBounds(view)),"focus fits the entire tall KII at height x25");
 Snapshot(view,"tall-focus.png");
 
-// Integration: controls operate on the selected scene, not on pending generation form settings.
+
 var vm=new MainViewModel{Scenes=Array.AsReadOnly(new[]{scene,MakeScene(false)}),SelectedScene=scene,IsThreeD=false};
 var window=new MainWindow{DataContext=vm};window.Measure(new Size(1280,800));window.Arrange(new Rect(0,0,1280,800));
 var actualView=window.GetLogicalDescendants().OfType<SceneView>().Single();
@@ -233,7 +233,7 @@ dark.RotateView(80,10);Snapshot(dark,"3d-rotated.png");
 window.Measure(new Size(1100,650));window.Arrange(new Rect(0,0,1100,650));
 Check(actualView.Bounds.Width>200&&actualView.Bounds.Height>100,"viewer has usable area at minimum window size");
 
-// Capture the actual interface with a normal generated scene, not just the geometric test fixture.
+
 var settings=new JsonGenerationSettingsReader().Read(Path.GetFullPath(Path.Combine(AppContext.BaseDirectory,"../../../../../SceneGenerator.Console/settings.json")));
 var generated=new GeneratedSceneSource(settings).GetScenes().First();
 var demoVm=new MainViewModel(new StorageOutputFolderPicker(window),new WindowConfirmationService(window),new StorageSettingsFilePicker(window)){

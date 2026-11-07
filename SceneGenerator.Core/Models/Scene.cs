@@ -5,6 +5,8 @@ namespace SceneGenerator.Core.Models;
 public class Scene
 {
     private readonly List<SceneObject> _objects = new();
+    private readonly List<SceneObject> _kiiObjects = new();
+    public IReadOnlyList<SceneObject> KiiObjects { get; }
 
     public string Id { get; }
     public SceneMode Mode {get;}
@@ -45,8 +47,27 @@ public class Scene
         Bounds = bounds;
         
         _objects.Add(Kii);
+        _kiiObjects.Add(Kii);
+        KiiObjects = _kiiObjects.AsReadOnly();
         Objects = _objects.AsReadOnly();
     }
+    public void AddKii(SceneObject kii)
+    {
+        ArgumentNullException.ThrowIfNull(kii);
+        if (kii.Type != SceneObjectType.Kii)
+            throw new ArgumentException("Добавляемый объект должен быть КИИ.", nameof(kii));
+        if (!Bounds.Contains(kii.Geometry) ||
+            Mode == SceneMode.TwoD && (kii.Geometry.BaseElevation != 0 || kii.Geometry.Height != 0) ||
+            Mode == SceneMode.ThreeD && kii.Geometry.Height <= 0)
+            throw new ArgumentException("Проверьте границы и высоту объекта КИИ.", nameof(kii));
+        if (_objects.Any(o => o.Id == kii.Id))
+            throw new ArgumentException("Объект с таким идентификатором уже существует в сцене.", nameof(kii));
+        if (_objects.Any(o => o.Geometry.IntersectsHorizontally(kii.Geometry)))
+            throw new ArgumentException($"КИИ {kii.Id} пересекается с другим объектом сцены.", nameof(kii));
+        _objects.Insert(_kiiObjects.Count, kii);
+        _kiiObjects.Add(kii);
+    }
+
     public void AddObstacle(SceneObject obstacle)
     {
         ArgumentNullException.ThrowIfNull(obstacle);

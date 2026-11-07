@@ -29,7 +29,7 @@ public sealed record OsmImportOptions
 
     public GeographicBounds GetQueryBounds()
     {
-        // A conservative geographic envelope around the local rectangle, with a margin.
+
         double radius = double.Hypot(Length, Width) / 2 + 100;
         double latitudeDelta = radius / 6330000 * 180 / Math.PI;
         double longitudeDelta = latitudeDelta / Math.Cos((Math.Abs(Latitude) + latitudeDelta) * Math.PI / 180);

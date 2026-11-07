@@ -62,7 +62,7 @@ public sealed class OverpassDataProvider : IOsmDataProvider
                 ValidateResponse(cached);
                 return new(cached, _endpoint + " (кэш)", File.GetLastWriteTimeUtc(cachePath));
             }
-            catch (Exception error) when (error is FormatException or JsonException) { /* Fetch a fresh response instead. */ }
+            catch (Exception error) when (error is FormatException or JsonException) {                                       }
         }
 
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -104,7 +104,7 @@ public sealed class OverpassDataProvider : IOsmDataProvider
                     }
                     finally { if (File.Exists(temporary)) File.Delete(temporary); }
                 }
-                catch (Exception error) when (error is IOException or UnauthorizedAccessException) { /* The import can work without a cache. */ }
+                catch (Exception error) when (error is IOException or UnauthorizedAccessException) {                                            }
             }
             return new(json, _endpoint.ToString(), DateTimeOffset.UtcNow);
         }

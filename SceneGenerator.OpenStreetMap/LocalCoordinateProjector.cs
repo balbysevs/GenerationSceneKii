@@ -7,8 +7,8 @@ public interface ICoordinateProjector
     Point2D Project(double latitude, double longitude);
 }
 
-/// <summary>WGS84 geographic → ECEF → local east/north (EPSG:9837), translated to the scene rectangle.
-/// The ellipsoid's up component is deliberately discarded: this is not terrain elevation.</summary>
+
+
 public sealed class LocalCoordinateProjector : ICoordinateProjector
 {
     private readonly double _lat, _lon, _x, _y, _z, _offsetX, _offsetY;

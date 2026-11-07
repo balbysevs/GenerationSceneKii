@@ -14,6 +14,12 @@ public partial class OsmBuildingItemViewModel : ViewModelBase
     public partial bool Included { get; set; } = true;
 
     [ObservableProperty]
+    public partial bool IsKii { get; set; }
+
+    partial void OnIsKiiChanged(bool value) { if (value) Included = true; }
+    partial void OnIncludedChanged(bool value) { if (!value) IsKii = false; }
+
+    [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HeightDescription), nameof(IsEstimated))]
     public partial decimal? TopHeight { get; set; }
 

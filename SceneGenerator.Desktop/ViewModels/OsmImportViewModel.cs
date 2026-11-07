@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -52,15 +53,34 @@ public partial class OsmImportViewModel : ViewModelBase
     [NotifyCanExecuteChangedFor(nameof(LoadOnlineCommand), nameof(OpenFileCommand), nameof(CreateSceneCommand), nameof(SaveProjectCommand))]
     public partial bool IsBusy { get; set; }
 
+    public int KiiCount => Buildings.Count(b => b.IsKii);
+
+    partial void OnBuildingsChanged(IReadOnlyList<OsmBuildingItemViewModel> oldValue, IReadOnlyList<OsmBuildingItemViewModel> newValue)
+    {
+        foreach (var item in oldValue) item.PropertyChanged -= BuildingChanged;
+        foreach (var item in newValue) item.PropertyChanged += BuildingChanged;
+        UpdateKiiSelection();
+    }
+    private void BuildingChanged(object? sender, PropertyChangedEventArgs args)
+    {
+        if (args.PropertyName is nameof(OsmBuildingItemViewModel.IsKii) or nameof(OsmBuildingItemViewModel.Included)) UpdateKiiSelection();
+    }
+    private void UpdateKiiSelection()
+    {
+        OnPropertyChanged(nameof(KiiCount));
+        OnPropertyChanged(nameof(CreateSceneHint));
+        CreateSceneCommand.NotifyCanExecuteChanged();
+    }
+
     public string CreateSceneHint => _document is null
         ? "Сначала загрузите здания или откройте проект импорта."
-        : SelectedBuilding is null
-            ? "Выберите здание КИИ на плане или в списке."
-            : $"КИИ: {SelectedBuilding.Id}. Нажмите «Использовать сцену» для перехода к просмотру.";
+        : KiiCount == 0
+            ? "Отметьте хотя бы одно здание галочкой «КИИ»."
+            : $"Выбрано КИИ: {KiiCount}. Нажмите «Использовать сцену» для перехода к просмотру.";
 
     public bool CanEdit => !IsBusy;
     private bool CanSaveProject => !IsBusy && _document is not null && _pickSaveFile is not null;
-    private bool CanCreate => !IsBusy && _document is not null && SelectedBuilding is not null;
+    private bool CanCreate => !IsBusy && _document is not null && KiiCount > 0;
 
     public OsmImportViewModel(IOsmDataProvider onlineProvider, Func<Task<string?>> pickFile, Func<Task<string?>>? pickSaveFile = null, Func<IOsmDataProvider>? onlineProviderFactory = null)
     {
@@ -125,7 +145,9 @@ public partial class OsmImportViewModel : ViewModelBase
                     item.Included = choice.Included;
                     item.TopHeight = (decimal)choice.TopHeight;
                 }
-            SelectedBuilding = Buildings.FirstOrDefault(b => b.Id == document.SavedProject?.KiiId);
+            var savedKiiIds = document.SavedProject?.EffectiveKiiIds;
+            foreach (var item in Buildings) item.IsKii = savedKiiIds?.Contains(item.Id) == true;
+            SelectedBuilding = Buildings.FirstOrDefault(b => b.IsKii);
             Latitude = (decimal)options.Latitude; Longitude = (decimal)options.Longitude;
             AreaLength = (decimal)options.Length; AreaWidth = (decimal)options.Width;
             FloorHeight = (decimal)options.FloorHeight; DefaultHeight = (decimal)options.DefaultHeight;
@@ -138,7 +160,7 @@ public partial class OsmImportViewModel : ViewModelBase
                 $"по умолчанию: {Buildings.Count - known - levels}.\n" +
                 $"Предупреждений: {document.Issues.Count}. Рельеф ровный, крыши плоские; building:part не моделируются.\n" +
                 string.Join("\n", document.Issues.Take(12)) + (document.Issues.Count > 12 ? "\n…" : "");
-            StatusText = "Выберите здание КИИ на плане или в списке. Изменения центра и размеров применяются при следующей загрузке.";
+            StatusText = "Отметьте хотя бы одно здание галочкой «КИИ». Изменения центра и размеров применяются при следующей загрузке.";
             OnPropertyChanged(nameof(CreateSceneHint));
             CreateSceneCommand.NotifyCanExecuteChanged();
             SaveProjectCommand.NotifyCanExecuteChanged();
@@ -169,9 +191,9 @@ public partial class OsmImportViewModel : ViewModelBase
             var selections = Buildings.Select(b => new OsmBuildingSelection(b.Id,
                 IsThreeD && b.Included ? Read(b.TopHeight, $"Высота {b.Id}") : b.Building.Height.Top, b.Included, b.IsHeightEdited)).ToArray();
             var reviewed = _document! with { Options = _document.Options with { Mode = IsThreeD ? SceneMode.ThreeD : SceneMode.TwoD } };
-            string kiiId = SelectedBuilding!.Id;
+            string[] kiiIds = Buildings.Where(b => b.IsKii).Select(b => b.Id).ToArray();
             StatusText = "Создание сцены и проверка пересечений…";
-            OsmSceneSource source = await Task.Run(() => new OsmSceneSource(reviewed, kiiId, selections, _cancellation.Token), _cancellation.Token);
+            OsmSceneSource source = await Task.Run(() => new OsmSceneSource(reviewed, kiiIds, selections, _cancellation.Token), _cancellation.Token);
             _cancellation.Token.ThrowIfCancellationRequested();
             foreach (var skipped in source.SkippedBuildings)
             {
@@ -205,14 +227,17 @@ public partial class OsmImportViewModel : ViewModelBase
             {
                 Options = _document!.Options with { Mode = IsThreeD ? SceneMode.ThreeD : SceneMode.TwoD },
                 RawOverpassJson = _document.RawJson, Source = _document.Source, LoadedAt = _document.LoadedAt,
-                KiiId = SelectedBuilding?.Id, Issues = _document.Issues,
+                Format = KiiCount > 1 ? "scene-generator-osm-project-v2" : "scene-generator-osm-project-v1",
+                KiiId = KiiCount == 1 ? Buildings.Single(b => b.IsKii).Id : null,
+                KiiIds = KiiCount > 1 ? Buildings.Where(b => b.IsKii).Select(b => b.Id).ToArray() : null,
+                Issues = _document.Issues,
                 Selections = Buildings.Select(b => new OsmBuildingSelection(b.Id,
                     Read(b.TopHeight, $"Высота {b.Id}"), b.Included, b.IsHeightEdited)).ToArray()
             };
             await project.SaveAsync(path);
             StatusText = "Проект импорта сохранён: исходные данные, привязка и правки высот. Это отдельный файл, не JSON сцены для решателя.";
         }
-        catch (Exception error) when (error is IOException or UnauthorizedAccessException or ArgumentException or InvalidOperationException)
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException or ArgumentException or InvalidOperationException or FormatException or JsonException)
         { ErrorMessage = error.Message; }
         finally { IsBusy = false; }
     }

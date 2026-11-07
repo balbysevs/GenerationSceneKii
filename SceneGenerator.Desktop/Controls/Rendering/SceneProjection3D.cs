@@ -5,7 +5,7 @@ using SceneGenerator.Core.Models;
 
 namespace SceneGenerator.Desktop.Controls.Rendering;
 
-/// <summary>Orthographic camera. Vertical exaggeration belongs to the view, not the scene.</summary>
+
 public readonly record struct SceneProjection3D
 {
     public Rect Plot { get; }

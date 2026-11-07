@@ -1,3 +1,4 @@
+using Avalonia.VisualTree;
 using System.Reflection;
 using System.Text.Json;
 using Avalonia;
@@ -74,13 +75,24 @@ async Task RunViewModelChecks()
  Check(delivered == 2 && !model.HasErrors, "correcting height makes the next attempt succeed");
  model.SelectedBuilding.Included = false;
  await model.CreateSceneCommand.ExecuteAsync(null);
- Check(delivered == 2 && model.ErrorMessage.Contains("включённое"), "excluded KII is rejected explicitly");
+ Check(delivered == 2 && !model.CreateSceneCommand.CanExecute(null) && model.KiiCount == 0, "excluding last KII disables transfer and clears role");
  model.SelectedBuilding.Included = true;
  model.SelectedBuilding = null;
  Check(!model.CreateSceneCommand.CanExecute(null), "missing KII keeps use command disabled");
- Check(model.CreateSceneHint.Contains("Выберите"), "disabled use command has a visible KII selection hint");
+ Check(model.CreateSceneHint.Contains("Отметьте"), "disabled use command has a visible KII selection hint");
 
- // Reproduce a real OSM overlap through the same Use Scene command as the window.
+ var first = model.Buildings.Single(b => b.Id == "way/1");
+ var second = model.Buildings.Single(b => b.Id == "way/2");
+ first.IsKii = true; second.IsKii = true;
+ Check(model.SelectedBuilding is null && model.KiiCount == 2 && model.CreateSceneCommand.CanExecute(null), "KII roles independent of inspector selection");
+ await model.CreateSceneCommand.ExecuteAsync(null);
+ Check(result!.GetScenes().Single().KiiObjects.Count == 2 && delivered == 3, "viewmodel delivers every marked KII");
+ second.Included = false;
+ Check(!second.IsKii && model.KiiCount == 1, "excluding a KII clears its role");
+ second.IsKii = true;
+ Check(second.Included && model.KiiCount == 2, "marking excluded building as KII includes it");
+
+
  string overlapJson = JsonSerializer.Serialize(new { elements = new object[] {
      new { type="way", id=11, tags=new { building="yes", height="18" }, geometry=new[] {
          new { lat=-.002, lon=-.002 }, new { lat=-.002, lon=-.001 }, new { lat=-.001, lon=-.001 }, new { lat=-.001, lon=-.002 }, new { lat=-.002, lon=-.002 } } },
@@ -92,6 +104,7 @@ async Task RunViewModelChecks()
  ISceneSource? overlapResult=null;overlapModel.SceneReady+=source=>overlapResult=source;
  await overlapModel.OpenFileCommand.ExecuteAsync(null);
  overlapModel.SelectedBuilding=overlapModel.Buildings.Single(b=>b.Id=="way/11");
+ overlapModel.SelectedBuilding.IsKii=true;
  await overlapModel.CreateSceneCommand.ExecuteAsync(null);
  Check(overlapResult is OsmSceneSource resultSource && resultSource.SkippedBuildings.Count==1 && !overlapModel.HasErrors,"Use Scene completes after excluding overlap");
  Check(!overlapModel.Buildings.Single(b=>b.Id=="way/12").Included && overlapModel.SelectedBuilding.Included,"only conflicting obstacle unchecked, KII retained");
@@ -135,6 +148,10 @@ async Task Run(IClassicDesktopStyleApplicationLifetime desktop)
  Check(ReferenceEquals(vm.Scenes,old),"old series preserved before commit");
  Check(model.QualityText.Contains("Предупреждений: 1"),"quality summary remains available without blocking scene use");
  model.SelectedBuilding!.TopHeight=75;
+ var kiiChecks=window.GetVisualDescendants().OfType<CheckBox>().Where(c => c.Content?.ToString()=="КИИ").ToArray();
+ Check(kiiChecks.Length>=2,"KII role checkboxes displayed in native list");
+ foreach(var role in kiiChecks.Where(c => c.DataContext is OsmBuildingItemViewModel b && b.Id is "way/1" or "way/2")) role.IsChecked=true;
+ Check(model.KiiCount==2,"native role checkboxes update multi selection");
  Application.Current!.RequestedThemeVariant=ThemeVariant.Dark;await Task.Delay(80);
  await Capture(window,"osm-dark.png");
  Application.Current.RequestedThemeVariant=ThemeVariant.Light;await Task.Delay(80);await Capture(window,"osm-light.png");
@@ -144,9 +161,11 @@ async Task Run(IClassicDesktopStyleApplicationLifetime desktop)
  Check(File.Exists(Path.Combine(temp,"review.osm-project.json")),"save reviewed project through native window model");
  await model.CreateSceneCommand.ExecuteAsync(null);await task;
  Check(!vm.IsWorkingWithSettings&&vm.Scenes.Count==1,"import replaces series only after success");
- Check(vm.SelectedScene!.Objects[0].Id=="way/1"&&vm.SelectedScene.Bounds.Height==75,"chosen KII and manual height transferred");
+ Check(vm.SelectedScene!.Objects[0].Id=="way/1"&&vm.SelectedScene.KiiObjects.Count==2&&vm.SelectedScene.Bounds.Height==75,"chosen KII and manual height transferred");
  var viewer=main.FindControl<SceneView>("SceneViewport")!;await Task.Delay(80);
  Check(ReferenceEquals(viewer.Scene,vm.SelectedScene)&&viewer.Has3DScene,"existing 3D viewer consumes imported Scene");
+ viewer.FocusKii();
+ Check(vm.SelectedScene.KiiObjects.SelectMany(o=>o.Geometry.GetBasePoints().Concat(o.Geometry.GetRoofPoints())).All(p=>viewer.TryProjectPoint(p,out var screen)&&screen.X>=0&&screen.Y>=0&&screen.X<=viewer.Bounds.Width&&screen.Y<=viewer.Bounds.Height),"focus keeps both KII within viewport");
  await vm.SaveAllCommand.ExecuteAsync(null);
  using(var export=JsonDocument.Parse(File.ReadAllText(Path.Combine(temp,"scene-000001.json"))))
   Check(export.RootElement.GetProperty("source").GetProperty("type").GetString()=="openstreetmap","same exporter emits OSM source");
@@ -154,7 +173,7 @@ async Task Run(IClassicDesktopStyleApplicationLifetime desktop)
  task=vm.ImportOsmCommand.ExecuteAsync(null);await Wait(()=>dialog.Window?.IsVisible==true,"reopen import");
  model=dialog.Model!;window=dialog.Window!;
  await model.OpenFileCommand.ExecuteAsync(null);
- Check(model.SelectedBuilding?.Id=="way/1"&&model.SelectedBuilding.TopHeight==75,"saved project restores KII and edited height");
+ Check(model.SelectedBuilding?.Id=="way/1"&&model.SelectedBuilding.TopHeight==75&&model.KiiCount==2,"saved project restores KII and edited height");
  Check(model.Latitude==0&&model.Longitude==0,"saved project restores its coordinates instead of current form");
  model.IsThreeD=false;
  await model.CreateSceneCommand.ExecuteAsync(null);await task;

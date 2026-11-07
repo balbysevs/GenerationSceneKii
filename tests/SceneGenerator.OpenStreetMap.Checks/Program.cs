@@ -119,6 +119,38 @@ CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("ru-RU");
 Check(OverpassDataProvider.CreateQuery(options).Contains("out body geom;") &&
     !OverpassDataProvider.CreateQuery(options).Contains("building:part"), "Invariant query and whole-building import");
 
+
+var multi = new OsmSceneSource(imported, new[] { "way/2", "way/1" }).GetScenes().Single();
+Check(multi.KiiObjects.Select(o => o.Id).SequenceEqual(new[] { "way/2", "way/1" }) &&
+    multi.Objects.Take(2).All(o => o.Type == SceneObjectType.Kii) && multi.Objects.Skip(2).All(o => o.Type == SceneObjectType.Obstacle), "All KII precede obstacles in selected order");
+Throws<ArgumentException>(() => new OsmSceneSource(imported, Array.Empty<string>()), "Empty KII list");
+Throws<ArgumentException>(() => new OsmSceneSource(imported, new[] { "way/1", "way/1" }), "Duplicate KII list");
+Throws<ArgumentException>(() => new OsmSceneSource(imported, new[] { "way/1", "missing" }), "Missing second KII");
+Throws<ArgumentException>(() => new OsmSceneSource(imported, new[] { "way/1", "way/3" }, choices), "Excluded second KII");
+Throws<ArgumentException>(() => new OsmSceneSource(overlap, new[] { "way/11", "way/12" }), "Selected overlapping KII cannot be silently dropped");
+var multiPriority = new OsmSceneSource(obstacleConflict, new[] { "way/11", "way/13" });
+Check(multiPriority.SkippedBuildings.Single().Id == "way/12" && multiPriority.GetScenes().Single().KiiObjects.Count == 2, "Second KII wins over earlier obstacle");
+var multiHeight = new OsmSceneSource(mixed, new[] { "way/11", "way/13" }).GetScenes().Single();
+Check(multiHeight.KiiObjects.Count == 2 && multiHeight.Bounds.Height == 18, "Rebuilding bounds retains every KII");
+var multi2D = new OsmSceneSource(imported with { Options = options with { Mode = SceneMode.TwoD } }, new[] { "way/1", "way/2" }).GetScenes().Single();
+Check(multi2D.KiiObjects.Count == 2 && multi2D.Objects.All(o => o.Geometry.Height == 0), "Multi KII in 2D");
+var incremental = new Scene("incremental", scene.Mode, scene.Bounds, scene.Objects[0]);
+incremental.AddObstacle(scene.Objects.Single(o => o.Id == "way/3"));
+var secondKii = new SceneObject("second", SceneObjectType.Kii, scene.Objects.Single(o => o.Id == "way/2").Geometry);
+incremental.AddKii(secondKii);
+Check(incremental.KiiObjects.Count == 2 && incremental.Objects[1] == secondKii, "Adding KII after an obstacle preserves ordering");
+Throws<ArgumentException>(() => incremental.AddKii(secondKii), "Duplicate KII id rejected atomically");
+Throws<ArgumentException>(() => incremental.AddKii(new SceneObject("overlap", SceneObjectType.Kii, secondKii.Geometry)), "Core KII overlap rejected atomically");
+Throws<ArgumentException>(() => incremental.AddKii(scene.Objects.Single(o => o.Id == "way/3")), "Wrong role rejected");
+Check(incremental.KiiObjects.Count == 2 && incremental.Objects.Count == 3, "Failed additions leave scene intact");
+var mapper = new SceneGenerator.Serialization.Mapping.SceneDtoMapper();
+var multiDto = mapper.ToDto(multi, new SceneSourceDto { Type = "openstreetmap" });
+Check(multiDto.SchemaVersion == "1.1" && multiDto.RadarPlacementZones.Count == 2 &&
+    multiDto.RadarPlacementZones.Select(z => z.ObjectId).SequenceEqual(multi.KiiObjects.Select(o => o.Id)) &&
+    multiDto.RadarPlacementZones.Select(z => z.Id).Distinct().Count() == 2, "Multi export contains distinct placement zones per KII");
+var singleDto = mapper.ToDto(scene, new SceneSourceDto { Type = "openstreetmap" });
+Check(singleDto.SchemaVersion == "1.0" && singleDto.RadarPlacementZones.Single().Id == "kii-placement-zone", "Single KII contract unchanged");
+
 string temp = Path.Combine(Path.GetTempPath(), "osm-checks-" + Guid.NewGuid().ToString("N"));
 Directory.CreateDirectory(temp);
 try
@@ -137,6 +169,17 @@ try
     Check(reopened.Options == options && reopened.SavedProject?.KiiId == "way/1", "Local project restores geographic area and KII");
     Check(reopened.SavedProject!.Selections.Single(s => s.Id == "way/1").TopHeight == 75, "Local project keeps height corrections");
     await ThrowsAsync<IOException>(() => project.SaveAsync(projectPath), "Project save refuses replacement");
+    var multiProject = project with { Format = "scene-generator-osm-project-v2", KiiId = null, KiiIds = new[] { "way/1", "way/2" } };
+    string multiPath = Path.Combine(temp, "multi.osm-project.json");
+    await multiProject.SaveAsync(multiPath);
+    var multiReopened = await new OsmImportService(new FileOsmDataProvider(multiPath)).LoadAsync(options);
+    Check(multiReopened.SavedProject!.EffectiveKiiIds.SequenceEqual(new[] { "way/1", "way/2" }), "Multi project roundtrip");
+    Check(new OsmSceneSource(multiReopened, multiReopened.SavedProject.EffectiveKiiIds, multiReopened.SavedProject.Selections).GetScenes().Single().KiiObjects.Count == 2, "Multi project restores usable scene");
+    await ThrowsAsync<FormatException>(() => (multiProject with { KiiIds = new[] { "way/1", "way/1" } }).SaveAsync(Path.Combine(temp, "invalid.json")), "Invalid project list rejected before save");
+    string multiScenePath = Path.Combine(temp, "multi-scene.json");
+    new JsonSceneExporter(new SceneSourceDto { Type = "openstreetmap" }).Export(multi, multiScenePath);
+    using var multiJson = JsonDocument.Parse(File.ReadAllText(multiScenePath));
+    Check(multiJson.RootElement.GetProperty("schemaVersion").GetString() == "1.1" && multiJson.RootElement.GetProperty("radarPlacementZones").GetArrayLength() == 2, "Actual serialized JSON exports multiple zones");
     string rawPath = Path.Combine(temp,"overpass.json"); File.WriteAllText(rawPath, fixture);
     Check((await new OsmImportService(new FileOsmDataProvider(rawPath)).LoadAsync(options)).Buildings.Count == 4, "Offline raw response import");
 

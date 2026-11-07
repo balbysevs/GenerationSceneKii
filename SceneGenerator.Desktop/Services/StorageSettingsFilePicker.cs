@@ -52,7 +52,7 @@ public sealed class StorageSettingsFilePicker : ISettingsFilePicker
             SuggestedFileName = "settings.json",
             DefaultExtension = "json",
             FileTypeChoices = [JsonFiles],
-            // The application confirms replacements on every platform, including macOS.
+
             ShowOverwritePrompt = false
         });
         return file is null ? null : file.TryGetLocalPath()

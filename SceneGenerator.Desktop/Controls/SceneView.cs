@@ -143,7 +143,7 @@ public class SceneView : Control
     {
         if (!Is3DActive || !double.IsFinite(azimuthDelta) || !double.IsFinite(elevationDelta) ||
             !TryGetProjection3D(out SceneProjection3D before)) return;
-        // A drag keeps one world-space anchor; pointer events must not rerasterize the previous frame.
+
         Point3D anchor = _isRotating && _rotationAnchor is { } dragAnchor
             ? dragAnchor : Anchor3D(before, before.Plot.Center);
         _azimuth = ((_azimuth + azimuthDelta) % 360 + 540) % 360 - 180;
@@ -156,7 +156,7 @@ public class SceneView : Control
     public void FocusKii()
     {
         if (Scene is not { } scene) return;
-        PolygonPrism3D kii = scene.Objects[0].Geometry;
+        var kii = scene.KiiObjects.Select(o => o.Geometry).ToArray();
         _zoom = 1;
         _pan = default;
         Rect plot;
@@ -166,7 +166,7 @@ public class SceneView : Control
 
         Rect initial = ProjectedKiiBounds(kii);
         double preferred = Math.Min(scene.Bounds.Size.Length, scene.Bounds.Size.Width) /
-            Math.Max(800, Math.Max(kii.Size.Length, kii.Size.Width) * 3);
+            Math.Max(800, Math.Max(kii.Max(g => g.Footprint.MaxX) - kii.Min(g => g.Footprint.MinX), kii.Max(g => g.Footprint.MaxY) - kii.Min(g => g.Footprint.MinY)) * 3);
         double fit = .7 * Math.Min(plot.Width / Math.Max(1, initial.Width), plot.Height / Math.Max(1, initial.Height));
         _zoom = Math.Clamp(Math.Min(preferred, fit), 1, 64);
         _pan = plot.Center - ProjectedKiiBounds(kii).Center;
@@ -175,9 +175,9 @@ public class SceneView : Control
         ClearHover();
     }
 
-    private Rect ProjectedKiiBounds(PolygonPrism3D kii)
+    private Rect ProjectedKiiBounds(PolygonPrism3D[] kii)
     {
-        Point[] points = kii.GetBasePoints().Concat(kii.GetRoofPoints()).Select(point =>
+        Point[] points = kii.SelectMany(g => g.GetBasePoints().Concat(g.GetRoofPoints())).Select(point =>
         {
             TryProjectPoint(point, out Point screen);
             return screen;
@@ -203,7 +203,7 @@ public class SceneView : Control
     public override void Render(DrawingContext context)
     {
         base.Render(context);
-        // Paint the viewer background so empty parts also receive pointer input.
+
         context.DrawRectangle(InfoBackground, null, new Rect(Bounds.Size));
         if (Is3DActive)
         {

@@ -8,7 +8,7 @@ public sealed record OsmBuildingSelection(string Id, double TopHeight, bool Incl
 
 public sealed record OsmSkippedBuilding(string Id, string Reason);
 
-/// <summary>An adapter from a reviewed OSM import to the same source contract as random generation.</summary>
+
 public sealed class OsmSceneSource : ISceneSource
 {
     private readonly Scene _scene;
@@ -16,7 +16,15 @@ public sealed class OsmSceneSource : ISceneSource
 
     public OsmSceneSource(OsmImportDocument document, string kiiId,
         IReadOnlyList<OsmBuildingSelection>? selections = null, CancellationToken cancellationToken = default)
+        : this(document, new[] { kiiId }, selections, cancellationToken) { }
+
+    public OsmSceneSource(OsmImportDocument document, IReadOnlyList<string> kiiIds,
+        IReadOnlyList<OsmBuildingSelection>? selections = null, CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(kiiIds);
+        if (kiiIds.Count == 0 || kiiIds.Any(string.IsNullOrWhiteSpace) || kiiIds.Distinct().Count() != kiiIds.Count)
+            throw new ArgumentException("Отметьте хотя бы один КИИ без повторяющихся идентификаторов.", nameof(kiiIds));
+        var selectedIds = kiiIds.ToHashSet();
         cancellationToken.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(document);
         document.Options.Validate();
@@ -24,8 +32,9 @@ public sealed class OsmSceneSource : ISceneSource
         if (choices is not null && choices.Keys.Any(id => !document.Buildings.Any(b => b.Id == id)))
             throw new ArgumentException("Выбрано здание, отсутствующее в исходном импорте.");
         var included = document.Buildings.Where(b => choices is null || !choices.TryGetValue(b.Id, out var choice) || choice.Included).ToArray();
-        var kii = included.SingleOrDefault(b => b.Id == kiiId)
-            ?? throw new ArgumentException("Выберите включённое в сцену здание КИИ.", nameof(kiiId));
+        if (kiiIds.Any(id => !included.Any(b => b.Id == id)))
+            throw new ArgumentException("Каждый КИИ должен быть включён в сцену и присутствовать в импорте.", nameof(kiiIds));
+        var kii = included.Single(b => b.Id == kiiIds[0]);
         bool threeD = document.Options.Mode == SceneMode.ThreeD;
         PolygonPrism3D Geometry(OsmBuilding b)
         {
@@ -39,19 +48,24 @@ public sealed class OsmSceneSource : ISceneSource
         _scene = new Scene("osm-" + Guid.NewGuid().ToString("N"), document.Options.Mode,
             new Box3D(new Point3D(0, 0, 0), new Size3D(document.Options.Length, document.Options.Width, sceneHeight)),
             new SceneObject(kii.Id, SceneObjectType.Kii, geometries[kii.Id]));
+        foreach (string id in kiiIds.Skip(1))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            _scene.AddKii(new SceneObject(id, SceneObjectType.Kii, geometries[id]));
+        }
         var skipped = new List<OsmSkippedBuilding>();
-        foreach (var building in included.Where(b => b.Id != kii.Id))
+        foreach (var building in included.Where(b => !selectedIds.Contains(b.Id)))
         {
             cancellationToken.ThrowIfCancellationRequested();
             try { _scene.AddObstacle(new SceneObject(building.Id, SceneObjectType.Obstacle, geometries[building.Id])); }
             catch (ArgumentException error)
             {
-                // Scene validates before adding: a rejected obstacle leaves the accepted objects intact.
+
                 skipped.Add(new OsmSkippedBuilding(building.Id, error.Message));
             }
         }
         SkippedBuildings = skipped.AsReadOnly();
-        // A skipped tall building must not enlarge the final scene's vertical bounds.
+
         if (threeD)
         {
             double acceptedHeight = _scene.Objects.Max(o => o.Geometry.BaseElevation + o.Geometry.Height);
@@ -63,7 +77,8 @@ public sealed class OsmSceneSource : ISceneSource
                 foreach (var obstacle in accepted.Skip(1))
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    _scene.AddObstacle(obstacle);
+                    if (obstacle.Type == SceneObjectType.Kii) _scene.AddKii(obstacle);
+                    else _scene.AddObstacle(obstacle);
                 }
             }
         }

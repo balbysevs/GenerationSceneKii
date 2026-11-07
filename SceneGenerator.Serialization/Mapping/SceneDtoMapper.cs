@@ -17,10 +17,11 @@ public sealed class SceneDtoMapper
         if (source.Type != "generated" && (source.Seed is not null || source.SequenceIndex is not null))
             throw new ArgumentException("Seed и номер в серии относятся только к генерации.", nameof(source));
 
-        SceneObject kii = scene.Objects[0];
+        var kiis = scene.KiiObjects;
 
         return new SceneDto
         {
+            SchemaVersion = kiis.Count > 1 ? "1.1" : "1.0",
             SceneId = scene.Id,
             Mode = scene.Mode switch
             {
@@ -39,15 +40,12 @@ public sealed class SceneDtoMapper
             },
             Terrain = new TerrainDto { Elevation = scene.Bounds.BaseElevation },
             Objects = Array.AsReadOnly(scene.Objects.Select(ToDto).ToArray()),
-            RadarPlacementZones = Array.AsReadOnly(new[]
-            {
-                new RadarPlacementZoneDto
+            RadarPlacementZones = Array.AsReadOnly(kiis.Select((kii, index) => new RadarPlacementZoneDto
                 {
-                    Id = "kii-placement-zone",
+                    Id = kiis.Count == 1 ? "kii-placement-zone" : $"kii-placement-zone-{index + 1}",
                     ObjectId = kii.Id,
                     AllowedPositions = Array.AsReadOnly(new[] { "outerBoundary", "center" })
-                }
-            })
+                }).ToArray())
         };
     }
 

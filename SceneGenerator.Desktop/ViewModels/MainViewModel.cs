@@ -273,7 +273,7 @@ public partial class MainViewModel : ViewModelBase
 
     private void ApplySettings(GenerationSettings settings)
     {
-        // Convert the only unbounded double before changing any form fields.
+
         decimal nearestDistance = (decimal)settings.DistanceToNearestObstacle;
         SceneLength = (decimal)settings.SceneSize.Length;
         SceneWidth = (decimal)settings.SceneSize.Width;
@@ -296,7 +296,7 @@ public partial class MainViewModel : ViewModelBase
             ObstacleMinHeight = (decimal)settings.ObstacleSizes.Height.Min;
             ObstacleMaxHeight = (decimal)settings.ObstacleSizes.Height.Max;
         }
-        // Hidden 3D fields keep their values when loading 2D; CreateSettings writes zero heights for 2D.
+
     }
 
     [RelayCommand]
@@ -343,7 +343,7 @@ public partial class MainViewModel : ViewModelBase
             ISceneSource sceneSource = generatedSource;
             Scene[] generatedScenes = await Task.Run(() =>
             {
-                // Reserve the batch size and avoid temporary iterator-to-array buffers.
+
                 var scenes = new List<Scene>(settings.SceneCount);
                 foreach (Scene scene in sceneSource.GetScenes()) scenes.Add(scene);
                 return scenes.ToArray();
@@ -380,7 +380,7 @@ public partial class MainViewModel : ViewModelBase
     {
         if (_outputFolderPicker is null || !(saveAll ? CanSaveAll : CanSaveSelected)) return;
 
-        // Capture the scenes and their generation metadata before opening the dialog.
+
         Scene[] allScenes = Scenes.ToArray();
         Scene[] scenes = saveAll ? allScenes : new[] { SelectedScene! };
         var exports = scenes.Select(scene =>
@@ -408,7 +408,7 @@ public partial class MainViewModel : ViewModelBase
             StatusText = "Сохранение сцен…";
             await Task.Run(() =>
             {
-                // Check the whole batch before writing; the exporter also refuses overwrites.
+
                 foreach (var item in exports)
                 {
                     string path = Path.Combine(outputFolder, item.FileName);

@@ -28,7 +28,7 @@ public sealed class JsonSceneExporter : ISceneExporter
         string fullPath = Path.GetFullPath(filePath);
         Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
 
-        // Write beside the destination, then rename without replacing an existing scene.
+
         string temporaryPath = fullPath + "." + Guid.NewGuid().ToString("N") + ".tmp";
         try
         {

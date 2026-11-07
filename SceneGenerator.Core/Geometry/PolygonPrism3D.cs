@@ -5,7 +5,7 @@ public class PolygonPrism3D
     public Polygon2D Footprint { get; }
     public double BaseElevation { get; }
     public double Height { get; }
-    // Origin and Size describe the bounding box, not the polygon itself.
+
     public Point3D Origin { get; }
     public Size3D Size { get; }
 

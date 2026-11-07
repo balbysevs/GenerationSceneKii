@@ -1,6 +1,6 @@
 namespace SceneGenerator.Core.Geometry;
 
-/// <summary>A simple outer ring with disjoint, strictly contained holes. No repeated closing points.</summary>
+
 public sealed class Polygon2D
 {
     public const double Tolerance = 1e-8;
@@ -49,12 +49,12 @@ public sealed class Polygon2D
         return Edges(Outer).Any(e => PointSegmentDistance(point, e.A, e.B) <= tolerance);
     }
 
-    /// <summary>Tests overlap of positive area; shared edges and vertices are not intersections.</summary>
+
     public bool Intersects(Polygon2D other)
     {
         ArgumentNullException.ThrowIfNull(other);
         if (MaxX <= other.MinX || other.MaxX <= MinX || MaxY <= other.MinY || other.MaxY <= MinY) return false;
-        // Between consecutive vertex/crossing levels, all boundary edges have a fixed order.
+
         var levels = Rings().Concat(other.Rings()).SelectMany(r => r).Select(p => p.Y).ToList();
         foreach (var a in AllEdges())
         foreach (var b in other.AllEdges())
@@ -96,7 +96,7 @@ public sealed class Polygon2D
         return distance;
     }
 
-    /// <summary>Area centroid if inside; otherwise a deterministic interior representative point.</summary>
+
     public Point2D GetCenterPoint()
     {
         double cx = 0, cy = 0, area2 = 0;

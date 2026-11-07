@@ -1,6 +1,6 @@
 namespace SceneGenerator.Core.Geometry;
 
-/// <summary>Axis-aligned rectangular special case of a polygon prism.</summary>
+
 public sealed class Box3D : PolygonPrism3D
 {
     public Box3D(Point3D origin, Size3D size)
@@ -22,7 +22,7 @@ public sealed class Box3D : PolygonPrism3D
             return base.GetHorizontalDistanceTo(other);
         }
 
-        // Axis-aligned rectangles need interval gaps, not enumeration of every pair of edges.
+
         double dx = Math.Max(0, Math.Max(Footprint.MinX - other.Footprint.MaxX,
             other.Footprint.MinX - Footprint.MaxX));
         double dy = Math.Max(0, Math.Max(Footprint.MinY - other.Footprint.MaxY,

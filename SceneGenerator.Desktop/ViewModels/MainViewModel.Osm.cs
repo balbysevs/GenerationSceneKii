@@ -35,7 +35,7 @@ public partial class MainViewModel
             Scenes = imported;
             SelectedScene = imported[0];
             ErrorMessage = string.Empty;
-            StatusText = $"Импорт OSM: объектов {imported[0].Objects.Count}. Рельеф ровный; возможны оценочные высоты.";
+            StatusText = $"Импорт OSM: объектов {imported[0].Objects.Count}, КИИ {imported[0].KiiObjects.Count}. Рельеф ровный; возможны оценочные высоты.";
             if (source is OsmSceneSource osm && osm.SkippedBuildings.Count > 0)
             {
                 StatusText += $" Автоматически исключено конфликтующих зданий: {osm.SkippedBuildings.Count}. " +

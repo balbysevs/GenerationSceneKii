@@ -24,7 +24,7 @@ public sealed class JsonGenerationSettingsWriter : IGenerationSettingsWriter
         string temporaryPath = fullPath + "." + Guid.NewGuid().ToString("N") + ".tmp";
         try
         {
-            // Replace only a complete JSON file; keep the previous file if writing fails.
+
             File.WriteAllText(temporaryPath, json, new UTF8Encoding(false));
             File.Move(temporaryPath, fullPath, overwrite);
         }

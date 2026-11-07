@@ -11,7 +11,7 @@ using SceneGenerator.Core.Models;
 
 namespace SceneGenerator.Desktop.Controls.Rendering;
 
-/// <summary>Depth-tested prism renderer; roofs use even-odd filling to retain concavity and holes.</summary>
+
 internal sealed class Scene3DRenderer : IDisposable
 {
     private Scene? _scene;
@@ -186,7 +186,7 @@ internal sealed class Scene3DRenderer : IDisposable
             double wa = Cross(b, c, .5, y + .5) / area;
             double wb = Cross(c, a, .5, y + .5) / area;
             double first = left, last = right;
-            // Clip this scanline to the three barycentric half-planes before visiting pixels.
+
             if (!ClipWeight(wa, waStep, ref first, ref last) ||
                 !ClipWeight(wb, wbStep, ref first, ref last) ||
                 !ClipWeight(1 - wa - wb, wcStep, ref first, ref last)) continue;
