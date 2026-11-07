@@ -13,6 +13,10 @@
 
 ## Запуск готовой сборки
 
+**[Скачать SceneGen для Windows и macOS](https://github.com/balbysevs/GenerationSceneKii/releases/latest)**. В разделе Assets выберите архив для своей системы.
+
+Если вы собираете проект самостоятельно, готовые файлы появятся в следующих папках:
+
 | Платформа | Файл | Как открыть |
 | --- | --- | --- |
 | macOS, Apple Silicon | `artifacts/macos/osx-arm64/SceneGen.app` | Дважды щёлкните по приложению в Finder. |
