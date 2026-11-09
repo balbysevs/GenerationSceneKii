@@ -22,6 +22,7 @@ public sealed record OsmImportProject
     public string Attribution { get; init; } = "© OpenStreetMap contributors, ODbL; https://www.openstreetmap.org/copyright";
     internal static readonly JsonSerializerOptions JsonOptions = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, WriteIndented = true };
 
+    /// <summary>Читает и проверяет проект импорта; возвращает null, если JSON не содержит признака формата проекта.</summary>
     public static OsmImportProject? TryRead(string json)
     {
         using var doc = JsonDocument.Parse(json);
@@ -44,6 +45,7 @@ public sealed record OsmImportProject
         return project;
     }
 
+    /// <summary>Сохраняет проверенный проект импорта через временный файл, не перезаписывая существующий.</summary>
     public async Task SaveAsync(string path, CancellationToken cancellationToken = default)
     {
         Options.Validate();

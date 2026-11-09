@@ -6,6 +6,7 @@ public class Point3D
     public double Y { get; }
     public double Z { get; }
     
+    /// <summary>Создаёт пространственную точку с конечными координатами X, Y и Z.</summary>
     public Point3D(double x, double y, double z)
         {
         if (!double.IsFinite(x)) throw new ArgumentOutOfRangeException(nameof(x));

@@ -12,6 +12,7 @@ public sealed class Polygon2D
     public double MaxY { get; }
     public double Area { get; }
 
+    /// <summary>Создаёт многоугольник с необязательными отверстиями, проверяет контуры и приводит их к согласованному направлению обхода.</summary>
     public Polygon2D(IEnumerable<Point2D> outer, IEnumerable<IEnumerable<Point2D>>? holes = null)
     {
         ArgumentNullException.ThrowIfNull(outer);
@@ -36,6 +37,7 @@ public sealed class Polygon2D
             throw new ArgumentException("Площадь многоугольника должна быть положительной и конечной.");
     }
 
+    /// <summary>Проверяет принадлежность точки заполненной области, при необходимости включая границы внешнего и внутренних контуров.</summary>
     public bool Contains(Point2D point, bool includeBoundary = true)
     {
         ArgumentNullException.ThrowIfNull(point);
@@ -43,6 +45,7 @@ public sealed class Polygon2D
         return InsideRing(Outer, point) && !Holes.Any(r => InsideRing(r, point));
     }
 
+    /// <summary>Проверяет, находится ли точка на внешнем контуре с заданным допуском.</summary>
     public bool IsOnOuterBoundary(Point2D point, double tolerance = Tolerance)
     {
         ArgumentNullException.ThrowIfNull(point);
@@ -50,6 +53,7 @@ public sealed class Polygon2D
     }
 
 
+    /// <summary>Проверяет перекрытие заполненных областей по площади; одного касания границ недостаточно.</summary>
     public bool Intersects(Polygon2D other)
     {
         ArgumentNullException.ThrowIfNull(other);
@@ -80,6 +84,7 @@ public sealed class Polygon2D
         return false;
     }
 
+    /// <summary>Возвращает кратчайшее расстояние между многоугольниками с учётом отверстий; при касании или перекрытии возвращает ноль.</summary>
     public double DistanceTo(Polygon2D other)
     {
         ArgumentNullException.ThrowIfNull(other);
@@ -97,6 +102,7 @@ public sealed class Polygon2D
     }
 
 
+    /// <summary>Возвращает центроид, если он внутри области, либо внутреннюю точку на середине самого широкого проверенного сечения.</summary>
     public Point2D GetCenterPoint()
     {
         double cx = 0, cy = 0, area2 = 0;
@@ -125,9 +131,12 @@ public sealed class Polygon2D
         return result ?? throw new InvalidOperationException("Не найдена внутренняя точка многоугольника.");
     }
 
+    /// <summary>Перечисляет внешний контур, а затем контуры отверстий.</summary>
     private IEnumerable<IReadOnlyList<Point2D>> Rings() => new[] { Outer }.Concat(Holes);
+    /// <summary>Перечисляет рёбра внешнего и всех внутренних контуров.</summary>
     private IEnumerable<(Point2D A, Point2D B)> AllEdges() => Rings().SelectMany(Edges);
 
+    /// <summary>Возвращает заполненные интервалы горизонтального сечения многоугольника на заданной высоте Y.</summary>
     private IEnumerable<(double Left, double Right)> Intervals(double y)
     {
         var xs = new List<double>();
@@ -138,6 +147,7 @@ public sealed class Polygon2D
         for (int i = 0; i + 1 < xs.Count; i += 2) yield return (xs[i], xs[i + 1]);
     }
 
+    /// <summary>Проверяет простоту и ненулевую площадь контура и приводит его к заданному направлению обхода.</summary>
     private static List<Point2D> ValidateRing(IEnumerable<Point2D> ring, bool counterclockwise)
     {
         ArgumentNullException.ThrowIfNull(ring);
@@ -164,20 +174,24 @@ public sealed class Polygon2D
         return points;
     }
 
+    /// <summary>Вычисляет площадь контура со знаком, определяемым направлением обхода.</summary>
     private static double SignedArea(IReadOnlyList<Point2D> ring)
     {
         var origin = ring[0];
         return Edges(ring).Sum(e => (e.A.X - origin.X) * (e.B.Y - origin.Y) - (e.B.X - origin.X) * (e.A.Y - origin.Y)) / 2;
     }
 
+    /// <summary>Перечисляет пары соседних вершин, включая замыкающее ребро от последней вершины к первой.</summary>
     private static IEnumerable<(Point2D A, Point2D B)> Edges(IReadOnlyList<Point2D> ring)
     {
         for (int i = 0; i < ring.Count; i++) yield return (ring[i], ring[(i + 1) % ring.Count]);
     }
 
+    /// <summary>Проверяет, пересекаются ли или касаются друг друга рёбра двух контуров.</summary>
     private static bool BoundariesMeet(IReadOnlyList<Point2D> a, IReadOnlyList<Point2D> b) =>
         Edges(a).Any(x => Edges(b).Any(y => SegmentsMeet(x.A, x.B, y.A, y.B)));
 
+    /// <summary>Проверяет внутреннюю область контура по чётности пересечений горизонтального луча; граница проверяется отдельно.</summary>
     private static bool InsideRing(IReadOnlyList<Point2D> ring, Point2D point)
     {
         bool inside = false;
@@ -188,12 +202,15 @@ public sealed class Polygon2D
         return inside;
     }
 
+    /// <summary>Проверяет, лежит ли точка на ребре контура с учётом допуска.</summary>
     private static bool OnBoundary(IReadOnlyList<Point2D> ring, Point2D p) =>
         Edges(ring).Any(e => PointSegmentDistance(p, e.A, e.B) <= Tolerance);
 
+    /// <summary>Вычисляет ориентированное векторное произведение AB и AC для определения поворота.</summary>
     private static double Cross(Point2D a, Point2D b, Point2D c) =>
         (b.X - a.X) * (c.Y - a.Y) - (b.Y - a.Y) * (c.X - a.X);
 
+    /// <summary>Проверяет пересечение или касание двух отрезков с учётом допуска для их концов.</summary>
     private static bool SegmentsMeet(Point2D a, Point2D b, Point2D c, Point2D d)
     {
         double abC = Cross(a, b, c), abD = Cross(a, b, d), cdA = Cross(c, d, a), cdB = Cross(c, d, b);
@@ -203,6 +220,7 @@ public sealed class Polygon2D
                PointSegmentDistance(c, a, b) <= Tolerance || PointSegmentDistance(d, a, b) <= Tolerance;
     }
 
+    /// <summary>Возвращает расстояние от точки до ближайшей точки отрезка.</summary>
     private static double PointSegmentDistance(Point2D p, Point2D a, Point2D b)
     {
         double dx = b.X - a.X, dy = b.Y - a.Y;

@@ -4,6 +4,7 @@ namespace SceneGenerator.Core.Generation;
 
 public class NearestObstaclePlacementGenerator
 {
+    /// <summary>Размещает помеху за правой границей охватывающего прямоугольника КИИ с заданным зазором по X.</summary>
     public Box3D Generate(PolygonPrism3D Kii, Size3D obstacleSize, double distance)
     {
         ArgumentNullException.ThrowIfNull(Kii);

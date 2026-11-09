@@ -18,6 +18,7 @@ internal static class GenerationSettingsJson
 
     private sealed class SceneModeConverter : JsonConverter<SceneMode>
     {
+        /// <summary>Читает режим сцены из строкового значения JSON 2D или 3D.</summary>
         public override SceneMode Read(ref Utf8JsonReader reader, Type typeToConvert,
             JsonSerializerOptions options)
         {
@@ -34,6 +35,7 @@ internal static class GenerationSettingsJson
             };
         }
 
+        /// <summary>Записывает режим сцены в JSON как строку 2D или 3D.</summary>
         public override void Write(Utf8JsonWriter writer, SceneMode value,
             JsonSerializerOptions options)
         {

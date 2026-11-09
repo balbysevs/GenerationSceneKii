@@ -5,6 +5,7 @@ namespace SceneGenerator.OpenStreetMap;
 
 public sealed partial class BuildingHeightResolver
 {
+    /// <summary>Определяет отметку основания и верхнюю отметку здания из тегов OSM или оценок, записывая замечания об исходных данных.</summary>
     public BuildingHeight Resolve(IReadOnlyDictionary<string, string> tags, OsmImportOptions options,
         ICollection<string> issues, string id)
     {
@@ -49,10 +50,12 @@ public sealed partial class BuildingHeightResolver
         return new(top, bottom, origin);
     }
 
+    /// <summary>Разбирает конечное десятичное число с точкой или запятой независимо от культуры процесса.</summary>
     private static bool TryNumber(string value, out double number) =>
         double.TryParse(value.Trim().Replace(',', '.'), NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign,
             CultureInfo.InvariantCulture, out number) && double.IsFinite(number);
 
+    /// <summary>Разбирает значение длины и переводит его в метры; поддерживает метры и футы.</summary>
     public static bool TryMeters(string value, out double meters)
     {
         meters = 0;
@@ -62,6 +65,7 @@ public sealed partial class BuildingHeightResolver
         return double.IsFinite(meters);
     }
 
+    /// <summary>Возвращает выражение для распознавания числовой длины с необязательной единицей измерения.</summary>
     [GeneratedRegex(@"^([+-]?\d+(?:[.,]\d+)?)\s*(m|метр|метров|ft|feet|')?$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex LengthPattern();
 }

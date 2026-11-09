@@ -4,6 +4,7 @@ namespace SceneGenerator.OpenStreetMap;
 
 public interface ICoordinateProjector
 {
+    /// <summary>Преобразует широту и долготу в координаты на локальной плоскости.</summary>
     Point2D Project(double latitude, double longitude);
 }
 
@@ -13,6 +14,7 @@ public sealed class LocalCoordinateProjector : ICoordinateProjector
 {
     private readonly double _lat, _lon, _x, _y, _z, _offsetX, _offsetY;
 
+    /// <summary>Фиксирует географический центр участка и смещения локальных координат до центра сцены.</summary>
     public LocalCoordinateProjector(OsmImportOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
@@ -24,6 +26,7 @@ public sealed class LocalCoordinateProjector : ICoordinateProjector
         _offsetY = options.Width / 2;
     }
 
+    /// <summary>Переводит координаты WGS84 в локальные метры: X направлена на восток, Y на север, географический центр соответствует центру участка.</summary>
     public Point2D Project(double latitude, double longitude)
     {
         if (!double.IsFinite(latitude) || Math.Abs(latitude) > 90 ||
@@ -41,6 +44,7 @@ public sealed class LocalCoordinateProjector : ICoordinateProjector
             _offsetY - Math.Sin(_lat) * Math.Cos(_lon) * dx - Math.Sin(_lat) * Math.Sin(_lon) * dy + Math.Cos(_lat) * dz);
     }
 
+    /// <summary>Переводит широту и долготу в радианах в геоцентрические координаты WGS84 на поверхности эллипсоида.</summary>
     private static (double X, double Y, double Z) ToEcef(double latitude, double longitude)
     {
         const double a = 6378137;

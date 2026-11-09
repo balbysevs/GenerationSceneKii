@@ -14,10 +14,12 @@ public sealed class OsmSceneSource : ISceneSource
     private readonly Scene _scene;
     public IReadOnlyList<OsmSkippedBuilding> SkippedBuildings { get; }
 
+    /// <summary>Создаёт импортированную сцену с одним выбранным КИИ и пользовательскими правками зданий.</summary>
     public OsmSceneSource(OsmImportDocument document, string kiiId,
         IReadOnlyList<OsmBuildingSelection>? selections = null, CancellationToken cancellationToken = default)
         : this(document, new[] { kiiId }, selections, cancellationToken) { }
 
+    /// <summary>Создаёт сцену с выбранными КИИ в заданном порядке, применяет правки и записывает причины пропуска конфликтующих помех.</summary>
     public OsmSceneSource(OsmImportDocument document, IReadOnlyList<string> kiiIds,
         IReadOnlyList<OsmBuildingSelection>? selections = null, CancellationToken cancellationToken = default)
     {
@@ -84,5 +86,6 @@ public sealed class OsmSceneSource : ISceneSource
         }
     }
 
+    /// <summary>Возвращает последовательность из одной уже построенной сцены OSM.</summary>
     public IEnumerable<Scene> GetScenes() { yield return _scene; }
 }

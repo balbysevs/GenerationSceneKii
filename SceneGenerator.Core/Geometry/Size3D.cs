@@ -6,6 +6,7 @@ public class Size3D
     public double Width { get;}
     public double Height { get;}
 
+    /// <summary>Задаёт положительные длину и ширину и неотрицательную высоту; нулевая высота допустима для 2D.</summary>
     public Size3D(double length, double width, double height)
     {
         if (!double.IsFinite(length) || length <= 0)

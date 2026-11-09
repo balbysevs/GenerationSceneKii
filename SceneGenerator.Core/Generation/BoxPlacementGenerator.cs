@@ -6,12 +6,14 @@ public class BoxPlacementGenerator
 {
     private readonly Random _random;
 
+    /// <summary>Использует переданный источник случайных чисел для выбора позиции объекта.</summary>
     public BoxPlacementGenerator(Random random)
     {
         ArgumentNullException.ThrowIfNull(random);
         _random = random;
     }
 
+    /// <summary>Выбирает случайную горизонтальную позицию, в которой объект целиком помещается в заданные границы.</summary>
     public Box3D Generate(Box3D bounds, Size3D size)
     {
         ArgumentNullException.ThrowIfNull(bounds);

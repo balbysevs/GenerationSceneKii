@@ -6,6 +6,7 @@ namespace SceneGenerator.Serialization;
 
 public sealed class JsonGenerationSettingsReader : IGenerationSettingsReader
 {
+    /// <summary>Читает настройки из JSON и проверяет их перед запуском генерации.</summary>
     public GenerationSettings Read(string filePath)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(filePath);

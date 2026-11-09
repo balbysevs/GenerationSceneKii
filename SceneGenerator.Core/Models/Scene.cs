@@ -13,6 +13,7 @@ public class Scene
     public Box3D Bounds {get;}
     public IReadOnlyList<SceneObject> Objects { get; }
 
+    /// <summary>Создаёт сцену с заданными границами и первым объектом КИИ, проверяя совместимость геометрии с режимом 2D или 3D.</summary>
     public Scene(
         string id,
         SceneMode mode,
@@ -51,6 +52,7 @@ public class Scene
         KiiObjects = _kiiObjects.AsReadOnly();
         Objects = _objects.AsReadOnly();
     }
+    /// <summary>Проверяет геометрию и уникальность идентификатора КИИ и вставляет его перед помехами.</summary>
     public void AddKii(SceneObject kii)
     {
         ArgumentNullException.ThrowIfNull(kii);
@@ -68,6 +70,7 @@ public class Scene
         _kiiObjects.Add(kii);
     }
 
+    /// <summary>Добавляет помеху в границах сцены, если её идентификатор уникален и основание не перекрывает другие объекты.</summary>
     public void AddObstacle(SceneObject obstacle)
     {
         ArgumentNullException.ThrowIfNull(obstacle);

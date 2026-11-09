@@ -6,6 +6,7 @@ namespace SceneGenerator.Serialization.Mapping;
 
 public sealed class SceneDtoMapper
 {
+    /// <summary>Преобразует сцену в модель обмена с решателем, включая версию формата и правила размещения радаров для каждого КИИ.</summary>
     public SceneDto ToDto(Scene scene, SceneSourceDto source)
     {
         ArgumentNullException.ThrowIfNull(scene);
@@ -49,6 +50,7 @@ public sealed class SceneDtoMapper
         };
     }
 
+    /// <summary>Переносит тип и геометрию объекта: внешнее основание, отверстия, отметку основания и высоту.</summary>
     private static SceneObjectDto ToDto(SceneObject item) => new()
     {
         Id = item.Id,
@@ -72,6 +74,8 @@ public sealed class SceneDtoMapper
         }
     };
 
+    /// <summary>Копирует координаты X и Y вершины основания в модель экспорта.</summary>
     private static Point2DDto ToDto(Point2D point) => new(point.X, point.Y);
+    /// <summary>Копирует координаты X, Y и Z пространственной точки в модель экспорта.</summary>
     private static Point3DDto ToDto(Point3D point) => new(point.X, point.Y, point.Z);
 }

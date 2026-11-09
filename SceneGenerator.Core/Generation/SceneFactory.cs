@@ -6,6 +6,7 @@ namespace SceneGenerator.Core.Generation;
 
 public class SceneFactory
 {
+    /// <summary>Проверяет настройки и создаёт сцену без помех с КИИ в центре участка по X и Y.</summary>
     public Scene CreateWithKii(
         string sceneId,
         GenerationSettings settings)

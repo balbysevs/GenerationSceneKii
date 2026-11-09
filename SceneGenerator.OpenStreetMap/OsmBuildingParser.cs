@@ -5,6 +5,7 @@ namespace SceneGenerator.OpenStreetMap;
 
 public sealed class OsmBuildingParser
 {
+    /// <summary>Читает контуры зданий и дворов из ответа Overpass, переводит их в метры и собирает причины пропуска неподходящих объектов.</summary>
     public OsmImportDocument Parse(OsmData data, OsmImportOptions options, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(data);
@@ -110,15 +111,18 @@ public sealed class OsmBuildingParser
         return new(options, buildings.AsReadOnly(), issues.AsReadOnly(), data.Json, data.Source, data.LoadedAt, data.SavedProject);
     }
 
+    /// <summary>Извлекает строковые теги объекта из JSON.</summary>
     private static Dictionary<string, string> Tags(JsonElement element) =>
         element.TryGetProperty("tags", out var tags) && tags.ValueKind == JsonValueKind.Object
             ? tags.EnumerateObject().Where(p => p.Value.ValueKind == JsonValueKind.String)
                 .ToDictionary(p => p.Name, p => p.Value.GetString()!) : new();
 
+    /// <summary>Возвращает строковое свойство объекта JSON или пустую строку, если свойства нет либо оно не строковое.</summary>
     private static string Text(JsonElement element, string key) =>
         element.ValueKind == JsonValueKind.Object && element.TryGetProperty(key, out var value) && value.ValueKind == JsonValueKind.String
             ? value.GetString()! : "";
 
+    /// <summary>Читает географические вершины контура, проверяет координаты и убирает соседние дубликаты.</summary>
     private static List<GeoPoint> ReadGeometry(JsonElement element)
     {
         if (!element.TryGetProperty("geometry", out var geometry) || geometry.ValueKind != JsonValueKind.Array)
@@ -138,6 +142,7 @@ public sealed class OsmBuildingParser
         return result;
     }
 
+    /// <summary>Соединяет отрезки контура по совпадающим концам в замкнутые кольца мультиполигона.</summary>
     private static List<List<GeoPoint>> JoinRings(List<List<GeoPoint>> segments)
     {
         var pending = segments.Select(s => new List<GeoPoint>(s)).ToList();
@@ -159,6 +164,7 @@ public sealed class OsmBuildingParser
         return result;
     }
 
+    /// <summary>Переводит замкнутый контур в локальные координаты без повторения первой вершины в конце.</summary>
     private static IReadOnlyList<Point2D> ProjectRing(List<GeoPoint> ring, ICoordinateProjector projector)
     {
         if (ring.Count < 4 || ring[0] != ring[^1]) throw new ArgumentException("Контур не замкнут.");

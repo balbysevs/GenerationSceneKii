@@ -8,6 +8,7 @@ public class SceneObject
     public SceneObjectType Type { get; }
     public PolygonPrism3D Geometry { get; }
 
+    /// <summary>Создаёт объект сцены с непустым идентификатором, допустимым типом и заданной геометрией.</summary>
     public SceneObject(
         string id,
         SceneObjectType type,

@@ -10,6 +10,7 @@ public class GeneratedSceneSource : ISceneSource
 
     public int Seed { get; }
 
+    /// <summary>Проверяет настройки серии и фиксирует seed из настроек либо выбирает его случайно.</summary>
     public GeneratedSceneSource(GenerationSettings settings)
     {
         ArgumentNullException.ThrowIfNull(settings);
@@ -28,6 +29,7 @@ public class GeneratedSceneSource : ISceneSource
         Seed = settings.Seed ?? Random.Shared.Next();
     }
 
+    /// <summary>При каждом перечислении заново генерирует серию с тем же seed и последовательными идентификаторами.</summary>
     public IEnumerable<Scene> GetScenes()
     {
         Random random = new Random(Seed);

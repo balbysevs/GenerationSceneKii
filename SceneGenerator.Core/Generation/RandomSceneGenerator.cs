@@ -13,6 +13,7 @@ public class RandomSceneGenerator
     private readonly ObstacleSizeGenerator _sizeGenerator;
     private readonly BoxPlacementGenerator _placementGenerator;
 
+    /// <summary>Инициализирует выбор размеров и позиций помех одним источником случайных чисел.</summary>
     public RandomSceneGenerator(Random random)
     {
         ArgumentNullException.ThrowIfNull(random);
@@ -21,6 +22,7 @@ public class RandomSceneGenerator
         _placementGenerator = new BoxPlacementGenerator(random);
     }
 
+    /// <summary>Создаёт сцену с КИИ и заданным числом помех либо сообщает, что за отведённые попытки разместить их не удалось.</summary>
     public Scene Generate(
         string sceneId,
         GenerationSettings settings,

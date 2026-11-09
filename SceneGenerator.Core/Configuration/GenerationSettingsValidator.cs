@@ -3,6 +3,7 @@ namespace SceneGenerator.Core.Configuration;
 
 public class GenerationSettingsValidator
 {
+    /// <summary>Возвращает список нарушений ограничений генерации; пустой список означает, что настройки допустимы.</summary>
     public IReadOnlyList<string> Validate(GenerationSettings settings)
     {
         ArgumentNullException.ThrowIfNull(settings);
@@ -45,6 +46,7 @@ public class GenerationSettingsValidator
 
         return errors.AsReadOnly();
     }
+    /// <summary>Добавляет ошибки размеров участка, КИИ и диапазонов размеров помех по осям X и Y.</summary>
     private static void ValidateHorizontalSizes(
         GenerationSettings settings,
         List<string> errors)
@@ -87,6 +89,7 @@ public class GenerationSettingsValidator
         }
     }
 
+    /// <summary>Проверяет нулевые высоты для 2D и допустимые высоты сцены и объектов для 3D.</summary>
     private static void ValidateHeights(
         GenerationSettings settings,
         List<string> errors)

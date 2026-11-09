@@ -12,6 +12,7 @@ public sealed record OsmImportOptions
     public double FloorHeight { get; init; } = 3;
     public double DefaultHeight { get; init; } = 12;
 
+    /// <summary>Проверяет координаты, размеры области, режим сцены и параметры оценки высот.</summary>
     public void Validate()
     {
         if (!double.IsFinite(Latitude) || Math.Abs(Latitude) > 80 ||
@@ -27,6 +28,7 @@ public sealed record OsmImportOptions
         _ = GetQueryBounds();
     }
 
+    /// <summary>Вычисляет географические границы запроса с запасом вокруг прямоугольного участка.</summary>
     public GeographicBounds GetQueryBounds()
     {
 

@@ -1,7 +1,9 @@
 namespace SceneGenerator.OpenStreetMap;
 
+/// <summary>Координирует загрузку и разбор данных через переданный поставщик OSM.</summary>
 public sealed class OsmImportService(IOsmDataProvider provider)
 {
+    /// <summary>Загружает данные, разбирает геометрию вне вызывающего потока и проверяет, что здания сохранённого проекта восстановлены.</summary>
     public async Task<OsmImportDocument> LoadAsync(OsmImportOptions options, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(options);

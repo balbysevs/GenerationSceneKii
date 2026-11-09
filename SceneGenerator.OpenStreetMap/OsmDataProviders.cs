@@ -8,11 +8,14 @@ namespace SceneGenerator.OpenStreetMap;
 
 public interface IOsmDataProvider
 {
+    /// <summary>Получает исходные данные OSM для импорта с поддержкой отмены.</summary>
     Task<OsmData> LoadAsync(OsmImportOptions options, CancellationToken cancellationToken = default);
 }
 
+/// <summary>Предоставляет данные из локального файла ответа Overpass или сохранённого проекта импорта.</summary>
 public sealed class FileOsmDataProvider(string path) : IOsmDataProvider
 {
+    /// <summary>Читает файл Overpass или извлекает исходный ответ и метаданные из проекта импорта.</summary>
     public async Task<OsmData> LoadAsync(OsmImportOptions options, CancellationToken cancellationToken = default)
     {
         options.Validate();
@@ -32,6 +35,7 @@ public sealed class OverpassDataProvider : IOsmDataProvider
     private readonly Uri _endpoint;
     private readonly string? _cacheFolder;
 
+    /// <summary>Настраивает HTTP-клиент, HTTPS-адрес Overpass и необязательный каталог кэша.</summary>
     public OverpassDataProvider(HttpClient client, string? cacheFolder = null, Uri? endpoint = null)
     {
         _client = client ?? throw new ArgumentNullException(nameof(client));
@@ -40,6 +44,7 @@ public sealed class OverpassDataProvider : IOsmDataProvider
         if (_endpoint.Scheme != "https") throw new ArgumentException("Для Overpass требуется HTTPS.", nameof(endpoint));
     }
 
+    /// <summary>Формирует запрос Overpass для зданий и мультиполигонов в географических границах участка.</summary>
     public static string CreateQuery(OsmImportOptions options)
     {
         options.Validate();
@@ -48,6 +53,7 @@ public sealed class OverpassDataProvider : IOsmDataProvider
         return $"[out:json][timeout:45];(way[\"building\"][\"building\"!=\"no\"]({box});relation[\"type\"=\"multipolygon\"][\"building\"][\"building\"!=\"no\"]({box}););out body geom;";
     }
 
+    /// <summary>Загружает проверенный ответ Overpass из свежего кэша либо выполняет запрос к серверу.</summary>
     public async Task<OsmData> LoadAsync(OsmImportOptions options, CancellationToken cancellationToken = default)
     {
         string query = CreateQuery(options);
@@ -118,6 +124,7 @@ public sealed class OverpassDataProvider : IOsmDataProvider
         }
     }
 
+    /// <summary>Удаляет устаревшие ответы и ограничивает число и суммарный размер сохраняемых записей.</summary>
     private static void TrimCache(string folder)
     {
         var files = new DirectoryInfo(folder).EnumerateFiles("*.json")
@@ -132,6 +139,7 @@ public sealed class OverpassDataProvider : IOsmDataProvider
         }
     }
 
+    /// <summary>Проверяет наличие массива элементов и отклоняет ответы Overpass с диагностикой ошибки.</summary>
     private static void ValidateResponse(string json)
     {
         using var doc = JsonDocument.Parse(json);

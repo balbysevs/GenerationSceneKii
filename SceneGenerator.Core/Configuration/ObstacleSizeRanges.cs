@@ -6,6 +6,7 @@ public class ObstacleSizeRanges
     public DoubleRange Width { get; }
     public DoubleRange Height { get; }
 
+    /// <summary>Задаёт диапазоны размеров помех с положительными длиной и шириной и неотрицательной высотой.</summary>
     public ObstacleSizeRanges(
         DoubleRange length,
         DoubleRange width,

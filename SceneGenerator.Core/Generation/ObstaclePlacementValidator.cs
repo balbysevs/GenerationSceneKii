@@ -6,6 +6,7 @@ namespace SceneGenerator.Core.Generation;
 
 public class ObstaclePlacementValidator
 {
+    /// <summary>Проверяет границы участка, отсутствие перекрытия оснований и минимальные расстояния до КИИ и помех.</summary>
     public bool IsValid(
         Scene scene,
         PolygonPrism3D candidate,

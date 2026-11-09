@@ -13,12 +13,14 @@ public sealed class JsonSceneExporter : ISceneExporter
     private readonly SceneSourceDto _source;
     private readonly JsonSerializerOptions _options = new() { WriteIndented = true };
 
+    /// <summary>Создаёт экспортёр с метаданными источника, которые будут включены в JSON каждой сцены.</summary>
     public JsonSceneExporter(SceneSourceDto source)
     {
         ArgumentNullException.ThrowIfNull(source);
         _source = source with { };
     }
 
+    /// <summary>Сохраняет сцену в отдельный JSON-файл через временный файл, не перезаписывая готовый результат.</summary>
     public void Export(Scene scene, string filePath)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(filePath);

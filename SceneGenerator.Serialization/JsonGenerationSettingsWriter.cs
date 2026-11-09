@@ -7,6 +7,7 @@ namespace SceneGenerator.Serialization;
 
 public sealed class JsonGenerationSettingsWriter : IGenerationSettingsWriter
 {
+    /// <summary>Проверяет настройки и сохраняет их в JSON; существующий файл заменяется только с разрешения вызывающего кода.</summary>
     public void Write(GenerationSettings settings, string filePath, bool overwrite = false)
     {
         ArgumentNullException.ThrowIfNull(settings);

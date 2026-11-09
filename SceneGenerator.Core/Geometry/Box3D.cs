@@ -3,9 +3,11 @@ namespace SceneGenerator.Core.Geometry;
 
 public sealed class Box3D : PolygonPrism3D
 {
+    /// <summary>Создаёт параллелепипед с рёбрами вдоль осей по координатам нижнего угла и размерам.</summary>
     public Box3D(Point3D origin, Size3D size)
         : base(CreateFootprint(origin, size), origin.Z, size.Height) { }
 
+    /// <summary>Проверяет, помещается ли призма целиком внутри параллелепипеда, включая его границы.</summary>
     public bool Contains(PolygonPrism3D other)
     {
         ArgumentNullException.ThrowIfNull(other);
@@ -14,6 +16,7 @@ public sealed class Box3D : PolygonPrism3D
                other.BaseElevation >= BaseElevation && other.BaseElevation + other.Height <= BaseElevation + Height;
     }
 
+    /// <summary>Измеряет расстояние между основаниями, используя зазоры по осям для двух прямоугольников.</summary>
     public override double GetHorizontalDistanceTo(PolygonPrism3D other)
     {
         ArgumentNullException.ThrowIfNull(other);
@@ -31,6 +34,7 @@ public sealed class Box3D : PolygonPrism3D
         return distance <= Polygon2D.Tolerance ? 0 : distance;
     }
 
+    /// <summary>Строит четыре вершины прямоугольного основания по начальной точке, длине и ширине.</summary>
     private static Polygon2D CreateFootprint(Point3D origin, Size3D size)
     {
         ArgumentNullException.ThrowIfNull(origin);
