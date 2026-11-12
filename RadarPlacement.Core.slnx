@@ -1,8 +1,10 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/RadarPlacement.Core/RadarPlacement.Core.csproj" />
+    <Project Path="src/RadarPlacement.Serialization/RadarPlacement.Serialization.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/RadarPlacement.Core.Checks/RadarPlacement.Core.Checks.csproj" />
+    <Project Path="tests/RadarPlacement.Serialization.Checks/RadarPlacement.Serialization.Checks.csproj" />
   </Folder>
 </Solution>

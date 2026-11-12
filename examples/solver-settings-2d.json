@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "1.0",
+  "mode": "2D",
+  "radarCount": 2,
+  "radius": 3000,
+  "discretization": {
+    "candidateStep": 500,
+    "coverageStep": 1000,
+    "maxCandidatePositions": 10000,
+    "maxGridCells": 1000000,
+    "maxBitsetBytes": 268435456
+  }
+}
