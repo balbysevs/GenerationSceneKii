@@ -32,6 +32,6 @@ internal sealed class ProgressDisplay(ConsoleUi ui) : IProgress<SolverProgress2D
             SolverPhase2D.Completed => $"Оптимум дискретной модели найден: {progress.BestCoveredCellCount:N0} ячеек.",
             _ => throw new ArgumentOutOfRangeException(nameof(progress))
         };
-        ui.Line("  " + text);
+        ui.Progress("  " + text);
     }
 }

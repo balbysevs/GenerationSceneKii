@@ -19,13 +19,13 @@ internal sealed partial class ConsoleApplication
     internal ApplicationSession Session { get; }
 
     internal ConsoleApplication(TextReader input, TextWriter output, string workingDirectory,
-        string demoDirectory, OperationCancellation cancellation)
+        string demoDirectory, OperationCancellation cancellation, IConsoleTerminal? terminal = null)
     {
         _workingDirectory = Path.GetFullPath(workingDirectory);
         _demoDirectory = Path.GetFullPath(demoDirectory);
-        _ui = new(input, output, _workingDirectory);
         _cancellation = cancellation;
         Session = new(_workingDirectory);
+        _ui = new(input, output, _workingDirectory, terminal, BuildHeader);
     }
 
     internal async Task<int> RunAsync(string[] args)
@@ -50,14 +50,21 @@ internal sealed partial class ConsoleApplication
                 ShowMainMenu();
                 try
                 {
-                    switch (_ui.Read("Выберите пункт: "))
+                    string choice = _ui.Read("Выберите пункт: ");
+                    _ui.BeginScreen(choice switch
+                    {
+                        "1" => "Загрузка сцены", "2" => "Загрузка папки", "4" => "Расчёт сцен",
+                        "5" => "Просмотр результатов", "7" => "Удаление из списка", "8" => "Загрузка примера",
+                        "9" or "?" or "help" => "Справка", "0" => "Завершение работы", _ => "Выбор действия"
+                    });
+                    switch (choice)
                     {
                         case "1": await AddFileAsync(); break;
                         case "2": await AddDirectoryAsync(); break;
-                        case "3": await SettingsMenuAsync(); break;
+                        case "3": await SettingsMenuAsync(); continue;
                         case "4": await CalculateAsync(); break;
-                        case "5": ViewResults(); break;
-                        case "6": await OutputMenuAsync(); break;
+                        case "5": ViewResults(); continue;
+                        case "6": await OutputMenuAsync(); continue;
                         case "7": RemoveScenes(); break;
                         case "8": await LoadDemoAsync(); break;
                         case "9": case "?": case "help": ShowHelp(); break;
@@ -77,6 +84,7 @@ internal sealed partial class ConsoleApplication
                 {
                     _ui.Line("Ошибка: " + ConsoleUi.Safe(exception.Message));
                 }
+                _ui.Pause();
             }
         }
         catch (EndOfInputException)
@@ -90,13 +98,8 @@ internal sealed partial class ConsoleApplication
 
     private void ShowMainMenu()
     {
-        _ui.Line();
-        _ui.Line("──────────────── Главное меню ────────────────");
-        int ready = Session.Scenes.Count(s => s.UsesSettings(Session.Settings));
-        _ui.Line($"Сцен: {Session.Scenes.Count}; рассчитано с текущими настройками: {ready}.");
-        _ui.Line($"Радаров: {Session.Settings.Radars.RadarCount}; радиус: {ConsoleUi.Number(Session.Settings.Radars.Radius)} м; " +
-            $"шаг позиций: {ConsoleUi.Number(Session.Settings.Discretization.CandidateStep)} м; " +
-            $"шаг покрытия: {ConsoleUi.Number(Session.Settings.Discretization.CoverageStep)} м.");
+        _ui.BeginScreen("Главное меню");
+        _ui.Line("Для знакомства: 8 — пример, затем 4 — расчёт.");
         _ui.Line("1 — Добавить сцену из JSON-файла");
         _ui.Line("2 — Добавить сцены из папки");
         _ui.Line("3 — Настройки расчёта: изменить / загрузить / сохранить");
@@ -121,13 +124,16 @@ internal sealed partial class ConsoleApplication
     {
         if (Session.Contains(path))
         {
+            Session.CurrentScene = Session.Scenes.First(s => string.Equals(s.SourcePath, path, StringComparison.OrdinalIgnoreCase));
             _ui.Line("Уже в списке: " + ConsoleUi.Safe(path));
             return false;
         }
         // Сначала полностью загружаем и проверяем документ. Ошибочный файл
         // не меняет уже загруженные сцены и не добавляет пустую запись в список.
         var document = await _sceneReader.LoadAsync(path, cancellationToken: token);
-        Session.Scenes.Add(new(path, document));
+        var entry = new SceneEntry(path, document);
+        Session.Scenes.Add(entry);
+        Session.CurrentScene = entry;
         _ui.Line($"Добавлена сцена #{Session.Scenes.Count}: {ConsoleUi.Safe(document.SceneId)}; помех: {document.Scene.Obstacles.Count}.");
         return true;
     }
@@ -196,9 +202,15 @@ internal sealed partial class ConsoleApplication
         string selection = _ui.Read(action + " — номер сцены [Enter или «все» — все; 0 — назад]: ");
         if (selection == "0") return [];
         if (selection.Length == 0 || selection.Equals("все", StringComparison.OrdinalIgnoreCase) || selection == "*")
+        {
+            Session.CurrentScene = Session.Scenes[0];
             return Session.Scenes.ToArray();
+        }
         if (int.TryParse(selection, out int number) && number >= 1 && number <= Session.Scenes.Count)
+        {
+            Session.CurrentScene = Session.Scenes[number - 1];
             return [Session.Scenes[number - 1]];
+        }
         _ui.Line("Такого номера сцены нет.");
         return [];
     }
@@ -210,6 +222,8 @@ internal sealed partial class ConsoleApplication
         if ((selected.Length > 1 || selected.Any(s => s.Result is not null && s.SavedPath is null)) &&
             !_ui.Confirm($"Убрать {selected.Length} сцен из памяти сеанса? Файлы на диске останутся")) return;
         foreach (var scene in selected) Session.Scenes.Remove(scene);
+        if (Session.CurrentScene is not null && !Session.Scenes.Contains(Session.CurrentScene))
+            Session.CurrentScene = Session.Scenes.FirstOrDefault();
         _ui.Line($"Из списка убрано: {selected.Length}. Файлы не удалялись.");
     }
 
@@ -217,6 +231,9 @@ internal sealed partial class ConsoleApplication
     {
         _ui.Line("RadarPlacement — интерактивная консоль, 2D.");
         _ui.Line("Запуск без аргументов открывает меню. --help, -h или /? выводят эту справку.");
+        _ui.Line("В окне экраны заменяют друг друга; сводка сверху показывает текущую сцену и параметры.");
+        _ui.Line("PgUp/PgDn — страницы длинного экрана; Enter после результата/ошибки — продолжить.");
+        _ui.Line("Рабочая папка: " + ConsoleUi.Safe(_workingDirectory));
         _ui.Line("Начало: 1/2 — загрузить сцены; 3 — настроить радары и сетку; 4 — рассчитать; 5 — посмотреть координаты.");
         _ui.Line("Быстрая проверка: 8 — пример, 4 — расчёт, Enter — все сцены.");
         _ui.Line("Готовые результаты автоматически записываются в Result/run-…/ (папка меняется в пункте 6).");

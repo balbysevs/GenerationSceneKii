@@ -11,6 +11,8 @@ namespace RadarPlacement.ConsoleApp;
 internal sealed class ApplicationSession(string workingDirectory)
 {
     internal List<SceneEntry> Scenes { get; } = [];
+    /// <summary>Последняя загруженная, выбранная или обрабатываемая сцена для постоянной сводки.</summary>
+    internal SceneEntry? CurrentScene { get; set; }
     internal SolverSettings2D Settings { get; private set; } = new();
     internal string OutputDirectory { get; set; } = Path.Combine(workingDirectory, "Result");
     internal bool IncludeCoverageGrid { get; set; }

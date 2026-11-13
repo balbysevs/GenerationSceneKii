@@ -1,0 +1,2 @@
+# Windows cmd.exe requires CRLF for reliable parsing of this launcher.
+Start-Console.cmd text eol=crlf

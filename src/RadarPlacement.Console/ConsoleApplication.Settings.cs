@@ -11,7 +11,7 @@ internal sealed partial class ConsoleApplication
         {
             var settings = Session.Settings;
             var grid = settings.Discretization;
-            _ui.Line();
+            _ui.BeginScreen("Настройки расчёта");
             _ui.Line("Настройки расчёта");
             _ui.Line($"1 — Количество радаров: {settings.Radars.RadarCount} (1–10)");
             _ui.Line($"2 — Радиус каждого: {ConsoleUi.Number(settings.Radars.Radius)} м (3000–7000)");
@@ -25,7 +25,9 @@ internal sealed partial class ConsoleApplication
             _ui.Line("0 — Назад");
             try
             {
-                switch (_ui.Read("Выберите параметр: "))
+                string choice = _ui.Read("Выберите параметр: ");
+                _ui.BeginScreen("Изменение настроек");
+                switch (choice)
                 {
                     case "0": return;
                     case "1":
@@ -53,6 +55,7 @@ internal sealed partial class ConsoleApplication
             }
             catch (OperationCanceledException) { _ui.Line("Операция с настройками отменена."); }
             catch (Exception exception) when (ConsoleErrors.IsExpected(exception)) { _ui.Line("Ошибка: " + ConsoleUi.Safe(exception.Message)); }
+            _ui.Pause();
         }
     }
 
@@ -99,7 +102,7 @@ internal sealed partial class ConsoleApplication
     {
         while (true)
         {
-            _ui.Line();
+            _ui.BeginScreen("Сохранение результатов");
             _ui.Line("Сохранение результатов");
             _ui.Line("1 — Папка: " + ConsoleUi.Safe(Session.OutputDirectory));
             _ui.Line("2 — Карты покрытия в JSON: " + (Session.IncludeCoverageGrid ? "включены" : "выключены") + " (переключить)");
@@ -107,7 +110,9 @@ internal sealed partial class ConsoleApplication
             _ui.Line("0 — Назад");
             try
             {
-                switch (_ui.Read("Выберите пункт: "))
+                string choice = _ui.Read("Выберите пункт: ");
+                _ui.BeginScreen("Параметры сохранения");
+                switch (choice)
                 {
                     case "0": return;
                     case "1":
@@ -127,6 +132,7 @@ internal sealed partial class ConsoleApplication
             }
             catch (OperationCanceledException) { _ui.Line("Сохранение отменено. Уже записанные файлы остаются на диске."); }
             catch (Exception exception) when (ConsoleErrors.IsExpected(exception)) { _ui.Line("Ошибка: " + ConsoleUi.Safe(exception.Message)); }
+            _ui.Pause();
         }
     }
 }

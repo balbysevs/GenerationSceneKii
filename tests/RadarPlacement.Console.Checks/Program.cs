@@ -25,8 +25,12 @@ var checks = new (string Name, Action Run)[]
     ("Отмена серии сохраняет уже готовые файлы", CheckBatchCancellation),
     ("Ошибка сохранения оставляет результат в памяти для повторной записи", CheckSavingRecovery),
     ("Удаление из списка не удаляет исходники и результаты", CheckRemoval),
-    ("Недоступная папка результатов не приводит к потере старого результата", CheckOutputFailure),
-    ("Настоящий процесс: справка, код ошибки и полный диалог через stdin", CheckRealProcess)
+    ("Недоступная папка результатов возвращает меню до расчёта", CheckOutputFailure),
+    ("Настоящий процесс: справка, код ошибки и полный диалог через stdin", CheckRealProcess),
+    ("Сменяемые экраны: сводка, расчёт, старые настройки и удаление сцены", ScreenChecks.Workflow),
+    ("Экран ошибки остаётся до подтверждения", ScreenChecks.Error),
+    ("Постраничный просмотр, изменение размера и длинный ввод", ScreenChecks.PagingAndInput),
+    ("Прогресс заменяется на месте, отмена возвращает рабочее меню", ScreenChecks.ProgressAndCancellation)
 };
 int failed = 0;
 foreach (var (name, run) in checks)
@@ -325,13 +329,13 @@ internal sealed class Harness : IDisposable
     internal string Text => Output.ToString();
     internal OperationCancellation Cancellation { get; } = new();
     internal ConsoleApplication App { get; }
-    internal Harness(string input) : this(_ => input) { }
-    internal Harness(Func<string, string> createInput)
+    internal Harness(string input, IConsoleTerminal? terminal = null) : this(_ => input, terminal) { }
+    internal Harness(Func<string, string> createInput, IConsoleTerminal? terminal = null)
     {
         Root = Path.Combine(_base, Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(Root);
         App = new(new StringReader(createInput(Root)), Output, Root,
-            Path.Combine(AppContext.BaseDirectory, "Fixtures"), Cancellation);
+            Path.Combine(AppContext.BaseDirectory, "Fixtures"), Cancellation, terminal);
     }
     internal int Run(params string[] args) => App.RunAsync(args).GetAwaiter().GetResult();
     public void Dispose()

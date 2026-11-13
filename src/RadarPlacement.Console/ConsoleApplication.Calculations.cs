@@ -16,6 +16,7 @@ internal sealed partial class ConsoleApplication
     {
         var selected = SelectScenes("Рассчитать");
         if (selected.Length == 0) return;
+        _ui.BeginScreen("Расчёт сцен — Ctrl+C для отмены");
         using var operation = _cancellation.Begin();
         string runDirectory = CreateRunDirectory();
         var settings = Session.Settings;
@@ -26,6 +27,7 @@ internal sealed partial class ConsoleApplication
         for (int i = 0; i < selected.Length; i++)
         {
             var entry = selected[i];
+            Session.CurrentScene = entry;
             bool newResultReady = false;
             try
             {
@@ -72,12 +74,14 @@ internal sealed partial class ConsoleApplication
         var ready = selected.Where(s => s.Result is not null).ToArray();
         if (selected.Length == 0) return;
         if (ready.Length == 0) { _ui.Line("У выбранных сцен ещё нет готовых результатов."); return; }
+        _ui.BeginScreen("Сохранение результатов");
         using var operation = _cancellation.Begin();
         string directory = CreateRunDirectory();
         _ui.Line("Новая папка сохранения: " + ConsoleUi.Safe(directory));
         int saved = 0, failed = 0;
         foreach (var entry in ready)
         {
+            Session.CurrentScene = entry;
             operation.Token.ThrowIfCancellationRequested();
             if (!entry.UsesSettings(Session.Settings))
                 _ui.Line("Сохраняется прежний результат со своими настройками: " + ConsoleUi.Safe(entry.Document.SceneId));
@@ -123,8 +127,12 @@ internal sealed partial class ConsoleApplication
 
     private void ViewResults()
     {
-        foreach (var entry in SelectScenes("Просмотреть"))
+        var selected = SelectScenes("Просмотреть");
+        if (selected.Length == 0) { _ui.Pause(); return; }
+        foreach (var entry in selected)
         {
+            Session.CurrentScene = entry;
+            _ui.BeginScreen("Сведения о сцене и результат");
             var scene = entry.Document.Scene;
             _ui.Line();
             _ui.Line("Сцена: " + ConsoleUi.Safe(entry.Document.SceneId));
@@ -132,7 +140,7 @@ internal sealed partial class ConsoleApplication
             _ui.Line($"Участок: {ConsoleUi.Number(scene.Bounds.Width)} × {ConsoleUi.Number(scene.Bounds.Height)} м; " +
                 $"КИИ: {ConsoleUi.Number(scene.CriticalInfrastructure.Width)} × {ConsoleUi.Number(scene.CriticalInfrastructure.Height)} м; помех: {scene.Obstacles.Count}.");
             if (entry.LastFailure is not null) _ui.Line("Последняя неудачная попытка: " + ConsoleUi.Safe(entry.LastFailure));
-            if (entry.Result is not { } result) { _ui.Line("Расчёт ещё не завершён."); continue; }
+            if (entry.Result is not { } result) { _ui.Line("Расчёт ещё не завершён."); _ui.Pause(); continue; }
             if (!entry.UsesSettings(Session.Settings))
                 _ui.Line("Это ранее рассчитанный результат с другими настройками. Новые настройки к нему не применялись.");
             _ui.Line($"Радаров: {result.Radars.Count}; радиус: {ConsoleUi.Number(result.RadarSettings.Radius)} м.");
@@ -149,6 +157,7 @@ internal sealed partial class ConsoleApplication
                 _ui.Line($"  {i + 1}. X = {point.X.ToString("G17", ConsoleUi.Russian)}; Y = {point.Y.ToString("G17", ConsoleUi.Russian)}");
             }
             _ui.Line("Файл результата: " + (entry.SavedPath is null ? "не сохранён; используйте пункт 6" : ConsoleUi.Safe(entry.SavedPath)));
+            _ui.Pause();
         }
     }
 }

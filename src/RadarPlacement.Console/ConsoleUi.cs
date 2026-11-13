@@ -3,22 +3,28 @@ using System.Globalization;
 namespace RadarPlacement.ConsoleApp;
 
 /// <summary>
-/// Построчный ввод/вывод. Не зависит от положения курсора, цвета или размеров окна,
-/// поэтому работает и в Windows Terminal, и в обычной консоли, и с перенаправлением ввода.
-/// TextReader/TextWriter позволяют проверять настоящий диалог без имитации вычислительного ядра.
+/// Диалог с двумя способами вывода: сменяемые экраны в терминале и обычные строки
+/// при перенаправлении потоков. Числа, пути и правила ввода одинаковы в обоих режимах.
+/// Построение кадров находится в соседней части класса ConsoleUi.Screen.cs.
 /// </summary>
-internal sealed class ConsoleUi(TextReader input, TextWriter output, string workingDirectory)
+internal sealed partial class ConsoleUi(TextReader input, TextWriter output, string workingDirectory,
+    IConsoleTerminal? terminal = null, Func<IReadOnlyList<string>>? header = null)
 {
     private readonly object _writeLock = new();
     internal static CultureInfo Russian { get; } = CultureInfo.GetCultureInfo("ru-RU");
 
     internal void Line(string text = "")
     {
-        lock (_writeLock) output.WriteLine(text);
+        lock (_writeLock)
+        {
+            if (terminal is null) output.WriteLine(text);
+            else { _body.Add(Safe(text)); Draw(tail: true); }
+        }
     }
 
     internal string Read(string prompt)
     {
+        if (terminal is not null) return ReadScreen(prompt);
         lock (_writeLock) { output.Write(prompt); output.Flush(); }
         // EOF — обычное завершение, в том числе посередине подменю. Повторять запрос
         // при закрытом потоке бессмысленно: это создало бы бесконечный цикл.

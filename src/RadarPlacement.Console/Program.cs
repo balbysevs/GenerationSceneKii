@@ -22,10 +22,14 @@ public static class Program
             e.Cancel = cancellation.RequestCancellation();
         };
         System.Console.CancelKeyPress += onCancel;
+        // Управление курсором предназначено только для окна. Справка, конвейеры и файлы
+        // получают чистый текст без управляющих последовательностей и дополнительных пауз.
+        IConsoleTerminal? terminal = args.Length == 0 && !System.Console.IsInputRedirected && !System.Console.IsOutputRedirected
+            ? new ConsoleTerminal() : null;
         try
         {
             var app = new ConsoleApplication(System.Console.In, System.Console.Out,
-                Directory.GetCurrentDirectory(), Path.Combine(AppContext.BaseDirectory, "Demo"), cancellation);
+                Directory.GetCurrentDirectory(), Path.Combine(AppContext.BaseDirectory, "Demo"), cancellation, terminal);
             return await app.RunAsync(args);
         }
         catch (Exception exception)
@@ -36,6 +40,7 @@ public static class Program
         finally
         {
             System.Console.CancelKeyPress -= onCancel;
+            if (terminal is ConsoleTerminal window) window.RestoreCursor();
         }
     }
 }
