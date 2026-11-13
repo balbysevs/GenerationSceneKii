@@ -1,0 +1,141 @@
+{
+  "schemaVersion": "1.0",
+  "sceneId": "generator-compatibility-2d",
+  "mode": "2D",
+  "coordinateSystem": {
+    "type": "localCartesian",
+    "units": "meters",
+    "xAxis": "east",
+    "yAxis": "north",
+    "zAxis": "up"
+  },
+  "source": {
+    "type": "generated",
+    "seed": 123,
+    "sequenceIndex": 1
+  },
+  "bounds": {
+    "min": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "max": {
+      "x": 10000,
+      "y": 10000,
+      "z": 0
+    }
+  },
+  "terrain": {
+    "type": "flat",
+    "elevation": 0
+  },
+  "objects": [
+    {
+      "id": "kii-001",
+      "type": "kii",
+      "geometry": {
+        "type": "polygonPrism",
+        "footprint": {
+          "outer": [
+            {
+              "x": 4500,
+              "y": 4500
+            },
+            {
+              "x": 5500,
+              "y": 4500
+            },
+            {
+              "x": 5500,
+              "y": 5500
+            },
+            {
+              "x": 4500,
+              "y": 5500
+            }
+          ],
+          "holes": []
+        },
+        "baseElevation": 0,
+        "height": 0
+      }
+    },
+    {
+      "id": "obstacle-001",
+      "type": "obstacle",
+      "geometry": {
+        "type": "polygonPrism",
+        "footprint": {
+          "outer": [
+            {
+              "x": 6500,
+              "y": 5000
+            },
+            {
+              "x": 6600,
+              "y": 5000
+            },
+            {
+              "x": 6600,
+              "y": 5100
+            },
+            {
+              "x": 6500,
+              "y": 5100
+            }
+          ],
+          "holes": []
+        },
+        "baseElevation": 0,
+        "height": 0
+      }
+    },
+    {
+      "id": "obstacle-002",
+      "type": "obstacle",
+      "geometry": {
+        "type": "polygonPrism",
+        "footprint": {
+          "outer": [
+            {
+              "x": 4000,
+              "y": 6500
+            },
+            {
+              "x": 4060,
+              "y": 6500
+            },
+            {
+              "x": 4060,
+              "y": 6580
+            },
+            {
+              "x": 4000,
+              "y": 6580
+            }
+          ],
+          "holes": []
+        },
+        "baseElevation": 0,
+        "height": 0
+      }
+    }
+  ],
+  "radarPlacementZones": [
+    {
+      "id": "kii-placement-zone",
+      "objectId": "kii-001",
+      "surface": "roof",
+      "allowedPositions": [
+        "outerBoundary",
+        "center"
+      ]
+    }
+  ],
+  "observationArea": {
+    "type": "terrainSurface",
+    "extent": "sceneBounds",
+    "excludeObjectFootprints": true
+  }
+}
